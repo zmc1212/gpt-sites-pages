@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>潮水 · 海岛钓鱼 — Tidewater 题材复刻</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div id="stage"></div>
+
+<!-- 左上标题卡 -->
+<div id="card-title" class="card">
+  <div class="t1">潮水&ensp;·&ensp;海岛钓鱼&ensp;·&ensp;TIDEWATER 复刻</div>
+  <div class="t2">题材复刻自 dgreenheck/tidewater(MIT)——低多边形海岛,开船出海、控线搏鱼、天黑前把渔获卖给 Joe</div>
+  <div class="t3">WASD 移动 · 拖动转视角 · 空格钓鱼 · E 互动 · C 图鉴 · H 帮助 · M 静音</div>
+</div>
+
+<!-- 右上状态卡 -->
+<div id="card-status" class="card">
+  <div class="row"><span class="k">金币</span><b id="st-coins">0</b></div>
+  <div class="row"><span class="k">时间</span><b id="st-time">07:00</b></div>
+  <div class="row"><span class="k">区域</span><b id="st-zone">—</b></div>
+  <div class="row"><span class="k">鱼护</span><b id="st-cooler">0/8</b></div>
+  <canvas id="minimap" width="150" height="150"></canvas>
+</div>
+
+<!-- 搏鱼张力条(搏鱼时显示) -->
+<div id="tension-wrap" class="hidden">
+  <div class="tn-label"><span id="tn-fish">—</span><span id="tn-dist">—</span></div>
+  <div id="tension-bar">
+    <div class="tn-band"></div><div class="tn-band green"></div>
+    <div id="tn-fill"></div>
+    <div id="tn-cursor"></div>
+  </div>
+  <div class="tn-tip">按住 空格 收线 · 鱼冲刺时松开 · 张力保持在绿区</div>
+</div>
+
+<!-- 底部提示胶囊 -->
+<div id="hint-pill"><i id="hint-dot"></i><span id="hint-text">…</span></div>
+
+<!-- 左下 / 右下角标 -->
+<div id="corner-left" class="corner">低多边形 · 程序化岛屿 · 12 种加勒比渔获 · 昼夜循环</div>
+<div id="corner-right" class="corner">题材复刻 · TIDEWATER(dgreenheck, MIT) · 零构建</div>
+
+<!-- 顶部 toast -->
+<div id="toasts"></div>
+
+<!-- 悬浮卖鱼价签(靠近 Joe 时) -->
+<div id="fly-tag" class="hidden"></div>
+
+<!-- 面板遮罩 + 各面板 -->
+<div id="overlay" class="hidden">
+  <div id="panel-catch" class="panel hidden">
+    <div class="p-head">渔获!</div>
+    <div id="catch-art"></div>
+    <div class="c-name" id="catch-name">—</div>
+    <div class="c-stars" id="catch-stars"></div>
+    <div class="c-rows">
+      <div><span>长度</span><b id="catch-len">—</b></div>
+      <div><span>重量</span><b id="catch-wt">—</b></div>
+      <div><span>参考价</span><b id="catch-price">—</b></div>
+    </div>
+    <div class="c-badge hidden" id="catch-record">★ 新纪录!</div>
+    <div class="c-flavor" id="catch-flavor">—</div>
+    <button class="btn" id="catch-ok">收进鱼护(Esc / 空格)</button>
+  </div>
+
+  <div id="panel-sell" class="panel hidden">
+    <div class="p-head">Joe 的鱼摊 <small>「趁天没黑,都卖给我吧!」</small></div>
+    <div id="sell-list"></div>
+    <div class="sell-total">合计 <b id="sell-total">0</b> 金币</div>
+    <div class="p-btns">
+      <button class="btn primary" id="sell-all">全部卖出</button>
+      <button class="btn" id="sell-close">离开(Esc)</button>
+    </div>
+  </div>
+
+  <div id="panel-shop" class="panel hidden">
+    <div class="p-head">Marta 船具店 <small>「好装备才有大鱼。」</small></div>
+    <div id="shop-list"></div>
+    <div class="p-btns"><button class="btn" id="shop-close">离开(Esc)</button></div>
+  </div>
+
+  <div id="panel-log" class="panel hidden">
+    <div class="p-head">鱼获图鉴 <small id="log-count"></small></div>
+    <div id="log-list"></div>
+    <div class="p-btns"><button class="btn" id="log-close">关闭(Esc)</button></div>
+  </div>
+
+  <div id="panel-help" class="panel hidden">
+    <div class="p-head">玩法帮助</div>
+    <div class="help-body">
+      <p><b>移动</b> WASD 行走 / 开船(船速随油门),拖动鼠标转视角,滚轮缩放;靠近船按 <b>E</b> 上船,靠岸后再按 <b>E</b> 下船。</p>
+      <p><b>钓鱼</b> 站在码头/沙滩(或停稳船)按住 <b>空格</b> 蓄力,松开抛竿;浮漂落水后等咬钩——浮漂猛地下沉的瞬间按 <b>空格</b> 刺鱼;搏鱼时按住空格收线,鱼冲刺时松开,把张力保持在绿区,收完线即上岸。</p>
+      <p><b>渔场</b> 码头和浅滩多小鱼,海湾与礁石有大家伙,深海出军曹、鲯鳅和月夜旗鱼;深夜没有夜钓灯,咬钩率很低。</p>
+      <p><b>经济</b> Joe 白天(06:00-19:00)在鱼摊收鱼,鱼越大越值钱;Marta 的船具店卖线、轮、竿和夜钓灯,攒钱逐步升级。</p>
+      <p><b>其他</b> C 打开图鉴,M 静音,进度自动保存在浏览器(localStorage),H 面板底部可清档重开。</p>
+      <p class="credit">复刻说明:本站是对 threejs.cc 收录的开源项目 dgreenheck/tidewater(MIT)的题材复刻——保留玩法循环与低多边形海岛氛围,3D 场景、水面、角色与玩法代码全部为原创简化实现;原作的 FFT 海洋 / 体积云 / WebGPU 渲染等重型技术不在复刻范围内。</p>
+    </div>
+    <div class="p-btns">
+      <button class="btn danger" id="help-reset">清档重开</button>
+      <button class="btn" id="help-close">关闭(Esc)</button>
+    </div>
+  </div>
+</div>
+
+<!-- 首次引导 -->
+<div id="guide" class="hidden">
+  <div class="g-box">
+    <div class="g-title">潮水 · 海岛钓鱼</div>
+    <div class="g-sub">Tidewater 题材复刻 · 三步上手</div>
+    <div class="g-steps">
+      <div><b>① 走到码头</b><span>WASD 走到木码头尽头,或者按 E 上船开出去(深海出大鱼)。</span></div>
+      <div><b>② 抛竿搏鱼</b><span>按住空格蓄力、松开抛竿;浮漂猛沉时按空格刺鱼,收线时让张力留在绿区。</span></div>
+      <div><b>③ 天黑前卖鱼</b><span>把渔获卖给码头的 Joe,去 Marta 店升级线轮竿,图鉴攒满 12 种。</span></div>
+    </div>
+    <button class="btn primary" id="guide-start">开始(回车)</button>
+  </div>
+</div>
+
+<!-- 入口加载失败引导横幅 -->
+<div id="boot-fail" class="hidden">
+  <div>页面未能启动:three.js 本地库(<code>vendor/three.min.js</code>)或入口脚本没有加载成功。</div>
+  <div>请改用本地 HTTP 打开:<code>cd tidewater-replica && python3 tools/serve.py 8080</code>,然后访问 <code>http://127.0.0.1:8080</code>。</div>
+</div>
+
+<script>
+  // 启动诊断:收集加载期错误,失败时给出可操作的 HTTP 启动指引
+  window.__errs = [];
+  window.addEventListener('error', function (e) {
+    window.__errs.push((e.message || 'script error') + '  @ ' + (e.filename || '').split('/').pop() + ':' + e.lineno);
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    window.__errs.push('promise: ' + (e.reason && e.reason.message || e.reason));
+  });
+  window.addEventListener('load', function () {
+    if (!window.THREE || !window.TW || !window.TW.booted) {
+      var el = document.getElementById('boot-fail');
+      if (window.__errs.length) {
+        var d = document.createElement('div');
+        d.style.cssText = 'font-size:12px;opacity:.85;margin-top:8px';
+        d.textContent = '错误详情:' + window.__errs.join(' | ');
+        el.appendChild(d);
+      }
+      el.classList.remove('hidden');
+    }
+  });
+</script>
+<script src="vendor/three.min.js"></script>
+<script src="src/util.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/daynight.js"></script>
+<script src="src/water.js"></script>
+<script src="src/world.js"></script>
+<script src="src/boat.js"></script>
+<script src="src/player.js"></script>
+<script src="src/fishing.js"></script>
+<script src="src/shops.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

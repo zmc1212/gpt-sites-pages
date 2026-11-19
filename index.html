@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT-SITES · 工作区总览 — 装配模拟站点合集</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --ink: #E8E4DA;
+    --ink-dim: #9A968B;
+    --paper: #1B1D21;
+    --line: #33363C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, "PingFang SC", "Microsoft YaHei", monospace;
+    padding: 34px 40px 60px;
+  }
+  #frame-dashed {
+    position: fixed; inset: 14px; pointer-events: none;
+    border: 1px dashed #4A4E56;
+  }
+  #frame-dashed::after {
+    content: ""; position: absolute; inset: 6px;
+    border: 1px solid rgba(74,78,86,0.35);
+  }
+
+  /* ---- 顶部标题卡 ---- */
+  #head { max-width: 1180px; margin: 0 auto 10px; }
+  .t1 { font-size: 26px; letter-spacing: 3px; font-weight: 700; }
+  .t1 em { font-style: normal; color: #E8A13D; }
+  .t2 { color: var(--ink-dim); font-size: 13px; margin-top: 9px; line-height: 1.7; }
+  .t2 b { color: var(--ink); font-weight: 600; }
+  .t3 { color: #6E6A60; font-size: 11px; margin-top: 6px; line-height: 1.7; }
+  .t3 code { color: #8FA3B8; background: #23262B; padding: 1px 6px; border-radius: 3px; }
+
+  /* ---- 分区标题(阶段胶囊风) ---- */
+  .section { max-width: 1180px; margin: 34px auto 12px; display: flex; align-items: center; gap: 14px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 14px; font-size: 12px; letter-spacing: 1px; color: var(--ink);
+    background: rgba(255,255,255,0.03);
+  }
+  .pill i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .pill small { color: var(--ink-dim); letter-spacing: 0; }
+  .rule { flex: 1; border-top: 1px dashed var(--line); }
+
+  /* ---- 卡片网格 ---- */
+  .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    background: #202329;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent, #888);
+    border-radius: 8px;
+    padding: 16px 18px 14px;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  a.card:hover { transform: translateY(-3px); background: #262A31; border-color: #565C66; }
+  .c1 { font-size: 15.5px; font-weight: 700; letter-spacing: 1px; color: var(--ink); line-height: 1.4; }
+  .c1 b { color: var(--accent); font-weight: 700; }
+  .brand { color: #7E8894; font-size: 10.5px; margin-top: 5px; letter-spacing: 1px; }
+  .zh { color: #C4BFB2; font-size: 12.5px; margin-top: 9px; line-height: 1.75; }
+  .zh b { color: var(--accent); font-weight: 600; }
+  .meta { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  .dir { color: #6E7683; font-size: 10.5px; background: #191C21; padding: 2px 7px; border-radius: 3px; border: 1px solid #2C3037; }
+  .open { margin-left: auto; font-size: 12px; color: var(--accent); letter-spacing: 1px; }
+  a.card:hover .open { text-decoration: underline; }
+  .warn { font-size: 10px; color: #C9803A; border: 1px dashed #6E5222; padding: 2px 7px; border-radius: 3px; }
+  .rainbow { display: inline-block; width: 54px; height: 4px; border-radius: 2px; vertical-align: middle;
+    background: linear-gradient(90deg, #C7161D 0 25%, #E0B400 25% 50%, #3EB435 50% 75%, #22B0C8 75% 100%); }
+
+  /* ---- 底部 ---- */
+  #foot { max-width: 1180px; margin: 40px auto 0; display: flex; justify-content: space-between; color: #5E5B54; font-size: 11px; letter-spacing: 1.5px; }
+  .card.disabled { opacity: 0.55; cursor: not-allowed; }
+  .card.disabled:hover { transform: none; background: #202329; border-color: var(--line); }
+</style>
+</head>
+<body>
+<div id="frame-dashed"></div>
+
+<div id="head">
+  <div class="t1">GPT-SITES&ensp;·&ensp;工作区总览&ensp;·&ensp;<em>站点合集</em></div>
+  <div class="t2">共 <b>49 个装配模拟</b> + <b>12 个场景导览</b> + <b>5 个创意动效</b> + <b>1 个纸艺探索</b> + <b>1 个海岛钓鱼</b> + <b>1 个桌面玩具</b> + <b>2 个科普可视化</b>,除 papertrails(构建产物随仓库交付)外全部零构建。装配模拟是约 45 秒自动循环的「产品视频」:
+    零件逐件飞入装配 → 调试运行,进入后<b>拖动旋转 · 滚轮缩放 · 点击零件看标签 · 空格暂停 · R 重播 · 数字键 1–8 跳阶段</b>;场景导览按章节滚动巡景。</div>
+  <div class="t3">发布版静态主站：<b>54</b> 个站点已打包到 <code>sites/</code> 下,另有 <b>17</b> 个站点源缺失未发布。构建：<code>node tools/build-pages.mjs</code>;本地预览：<code>python -m http.server 8080 --directory _site</code>。</div>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#1E9AAD"></i>经典电路板 · 装配模拟 <small>× 9</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#1E9AAD" href="sites/uno-r3-workbench/index.html">
+    <div class="c1">Arduino UNO R3 · <b>电路板装配</b></div>
+    <div class="brand">OPENHARD · UNO R3 · ATmega328P</div>
+    <div class="zh">开源硬件的完整生产流程:贴片回流 → 直插元件 → 芯片插装 → 连接器压装,再上电看 PWR 灯亮起、板载 LED 以 1Hz 闪烁、串口滚出字符流。43 个零件全部带<b>真实位号与参数</b>,点击可查。</div>
+    <div class="meta"><span class="dir">uno-r3-workbench/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#22B0C8" href="sites/zx-spectrum-48k-board/index.html">
+    <div class="c1">ZX Spectrum 48K · <b>主板装配</b> <span class="rainbow"></span></div>
+    <div class="brand">SINCLAIR · ISSUE 3B · 1982</div>
+    <div class="zh">16 颗 RAM 芯片逐颗落板、Ferranti 定制 ULA、Z80 与 ROM 就位后,屏幕亮出 <b>© 1982 版权页</b>;按 8 进入 LOAD 阶段——标志性的彩条加载屏与磁带音频波形一起跑起来。</div>
+    <div class="meta"><span class="dir">zx-spectrum-48k-board/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7C84E8" href="sites/c64-motherboard-lab/index.html">
+    <div class="c1">Commodore 64 · <b>主板实验室</b></div>
+    <div class="brand">ASSY 250425 · 蓝图风</div>
+    <div class="zh">6510 / VIC-II / SID / PLA 芯片海逐组装配,再插上手柄与电源:CRT 逐行打出 <b>38911 BASIC BYTES FREE · READY.</b> 进入 SID 阶段后按 A–K 键可以<b>弹奏音符</b>,看三声道波形跳动。</div>
+    <div class="meta"><span class="dir">c64-motherboard-lab/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D9A036" href="sites/altair-8800/index.html">
+    <div class="c1">Altair 8800 · <b>前面板与插卡</b></div>
+    <div class="brand">MITS · S-100 BUS · 1975</div>
+    <div class="zh">个人计算机的起点:8080 装机、S-100 插卡插入、前面板拨动开关与地址灯逐一点亮,回到拨开关输程序的时代。</div>
+    <div class="meta"><span class="dir">altair-8800/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#62B57E" href="sites/apple-1/index.html">
+    <div class="c1">Apple I · <b>NTB 主板</b></div>
+    <div class="brand">6502 · WOZ MONITOR · 1976</div>
+    <div class="zh">沃兹尼亚克手焊的传奇板子:6502 与内存装配后,CRT 上跑 Woz Monitor / BASIC,一块卖 $666.66 的板子。</div>
+    <div class="meta"><span class="dir">apple-1/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#5B8DD6" href="sites/ibm-pc-5150/index.html">
+    <div class="c1">IBM PC 5150 · <b>自检与插卡</b></div>
+    <div class="brand">8088 · FIVE ISA SLOTS · 1981</div>
+    <div class="zh">个人计算机标准的确立:ISA 插卡逐块插上,上电后看 POST <b>内存计数一路滚到 64K</b>。</div>
+    <div class="meta"><span class="dir">ibm-pc-5150/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C7392B" href="sites/famicom-console/index.html">
+    <div class="c1">任天堂 Famicom · <b>红白机扣合</b></div>
+    <div class="brand">HVC-001 · 2A03 + 2C02 · 1983</div>
+    <div class="zh">红白壳机身扣合、CPU/PPU 图形表装配,六千万台红白机的内部一次看全。</div>
+    <div class="meta"><span class="dir">famicom-console/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#6CC24A" href="sites/raspberry-pi-model-b/index.html">
+    <div class="c1">Raspberry Pi Model B · <b>单板机启动</b></div>
+    <div class="brand">BCM2835 · ARM11 · 2012</div>
+    <div class="zh">信用卡大小的计算机:SoC 与 PoP 内存贴装、接口齐全后,TTY 启动日志滚动,GPIO 闪烁。</div>
+    <div class="meta"><span class="dir">raspberry-pi-model-b/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#2FB8AC" href="sites/lodestar-sdr-workbench/index.html">
+    <div class="c1">LODESTAR LS-8 · <b>软件无线电</b></div>
+    <div class="brand">ANTHROPIC · SDR · 系列首作</div>
+    <div class="zh">本系列的开山之作:22 个零件从左侧飞入装配、线缆生长,上电调谐后完成一次<b>卫星过境的跟踪与锁定</b>,底部五块射频仪表盘全程联动。</div>
+    <div class="meta"><span class="dir">lodestar-sdr-workbench/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#B08D57"></i>机构复刻 · 装配模拟 <small>× 7 · 运动学均按真实机构验证</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#B08D57" href="sites/escapement-atelier/index.html">
+    <div class="c1">自动机械机芯 · <b>装配与走时</b></div>
+    <div class="brand">ATELIER · CAL. 2892-A</div>
+    <div class="zh">发条盒落位、齿轮系按<b>真实传动比啮合转动</b>、杠杆式擒纵 tick-tock、摆轮起摆到 ±270°(4Hz),自动锤上链后装上表盘走时——秒针每秒 8 小跳,擒纵特写小窗与 3D 同相位。</div>
+    <div class="meta"><span class="dir">escapement-atelier/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C75B39" href="sites/rangefinder-35-film/index.html">
+    <div class="c1">旁轴胶片相机 · <b>装卷与曝光</b></div>
+    <div class="brand">ERNSTMANN · RF-35 TYPE III</div>
+    <div class="zh">布帘快门装入、黄斑双影<b>合一对焦</b>演示、6 片镜片逐片飞入镜筒、光圈叶片开合;装一卷 36 张的胶卷后过片,按 8 看快门 1/1000 的<b>缝隙横扫</b>。</div>
+    <div class="meta"><span class="dir">rangefinder-35-film/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#E8611C" href="sites/v8-smallblock-teardown/index.html">
+    <div class="c1">V8 发动机 · <b>装配与怠速</b></div>
+    <div class="brand">IRONLINE · SB-350 · 90° SMALL-BLOCK</div>
+    <div class="zh">曲轴入座、8 组活塞连杆按<b>点火顺序 1-8-4-3-6-5-7-2</b> 依次装入,缸盖气门正时机构就位后起动:透视怠速里看活塞往复、气门开合与逐缸火花,中段还有一脚轰油。</div>
+    <div class="meta"><span class="dir">v8-smallblock-teardown/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#6FA3E8" href="sites/sonde-rocket-telemetry/index.html">
+    <div class="c1">探空火箭 · <b>总装与发射</b></div>
+    <div class="brand">AZURE RANGE · SR-290</div>
+    <div class="zh">发射架与箭体总装、T-10 倒计时后点火:相机跟随爬升、背景渐变<b>深空星野</b>,apogee 头锥分离、降落伞展开缓降回收,高度曲线/马赫数/事件灯全程遥测。</div>
+    <div class="meta"><span class="dir">sonde-rocket-telemetry/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A98A3D" href="sites/turntable-hifi-console/index.html">
+    <div class="c1">黑胶唱机 · <b>落针放唱</b></div>
+    <div class="brand">KOLTHOFF · HP-33 · BELT DRIVE</div>
+    <div class="zh">胡桃木底座、转盘与主轴装配、皮带挂载、音臂配平,放上唱片按下启动:转速爬升到 <b>33⅓ RPM</b> 锁定、落针循迹,频谱随「器乐」起舞。</div>
+    <div class="meta"><span class="dir">turntable-hifi-console/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C76A7A" href="sites/rod-and-boiler-28-0/index.html">
+    <div class="c1">蒸汽机车 2-8-0 · <b>连杆与升汽</b></div>
+    <div class="brand">GREAT VALLEY · CONSOL No.4750</div>
+    <div class="zh">轮对滚入、汽缸与连杆系装配后<b>手摇一圈看联动</b>(左右曲拐相差 90°);锅炉升压到 14 bar 安全阀排汽,调节阀拉开——机车在图纸上缓缓起步前行。</div>
+    <div class="meta"><span class="dir">rod-and-boiler-28-0/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C9A227" href="sites/orbiter-sunwing-ait/index.html">
+    <div class="c1">小卫星 · <b>总装与太阳翼展开</b></div>
+    <div class="brand">HELIODYNE · AURORA-SW · AIT BAY</div>
+    <div class="zh">洁净间转台上总装贮箱、电池、飞轮与天线,双翼<b>逐板展开测试</b>(角度计爬到 180°);按 8 进入在轨阶段——背景切深空、帆板对日定向、功率拉满 1200W。</div>
+    <div class="meta"><span class="dir">orbiter-sunwing-ait/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#88AACE"></i>场景 · 重现导览 <small>× 12</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <div class="card disabled" style="--accent:#88AACE">
+    <div class="c1">宜昌街景透视 </div>
+    <div class="brand">STREET PERSPECTIVES · V5 · 系列首个站点</div>
+    <div class="zh">宜昌街景的五幕透视场景,本工作区的起点;检出 submodule 后浏览。</div>
+    <div class="meta"><span class="dir">yichang-street-perspectives-v5/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#C8A165">
+    <div class="c1">波斯波利斯 · <b>台地重生</b> 
+</div>
+    <div class="brand">PERSEPOLIS REIMAGINED</div>
+    <div class="zh">古波斯王宫台地的三维重现,「重现」系列手法的源头。</div>
+    <div class="meta"><span class="dir">persepolis-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#6B9AC4">
+    <div class="c1">天坛 · <b>重现</b> </div>
+    <div class="brand">TIANTAN REIMAGINED</div>
+    <div class="zh">圜丘 / 回音壁 / 丹陛桥 / 祈年殿滚动导览,延续波斯波利斯的镜头手法。</div>
+    <div class="meta"><span class="dir">tiantan-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#7FA876">
+    <div class="c1">圆明园 · <b>重现</b> </div>
+    <div class="brand">YUANMINGYUAN REIMAGINED</div>
+    <div class="zh">福海烟水 / 九州清晏 / 蓬岛瑶台 / 西洋楼喷泉,8 章导览。</div>
+    <div class="meta"><span class="dir">yuanmingyuan-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#A67B4F">
+    <div class="c1">长城 · <b>重现</b> </div>
+    <div class="brand">GREAT WALL REIMAGINED</div>
+    <div class="zh">金山岭山脊 / 敌楼 / 垛口 / 烽火 / 云海,8 章导览。</div>
+    <div class="meta"><span class="dir">great-wall-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#C89A5B">
+    <div class="c1">莫高窟 · <b>重现</b> </div>
+    <div class="brand">MOGAO REIMAGINED</div>
+    <div class="zh">大漠崖面 / 九层楼 / 弥勒大像 / 经变壁画 / 藏经洞 / 心灯,8 章导览。</div>
+    <div class="meta"><span class="dir">mogao-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#B5714B">
+    <div class="c1">土楼 · <b>重现</b> </div>
+    <div class="brand">TULOU REIMAGINED</div>
+    <div class="zh">茶山 / 门楼 / 环廊 / 祖堂 / 四菜一汤 / 灯火,8 章导览。</div>
+    <div class="meta"><span class="dir">tulou-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#8C6E9E">
+    <div class="c1">悬空寺 · <b>重现</b> </div>
+    <div class="brand">XUANKONGSI REIMAGINED</div>
+    <div class="zh">金龙峡 / 栈道 / 悬梁 / 三教殿 / 危楼暮色,8 章导览。</div>
+    <div class="meta"><span class="dir">xuankongsi-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#9A6B4F">
+    <div class="c1">应县木塔 · <b>重现</b> </div>
+    <div class="brand">YINGXIAN TOWER REIMAGINED</div>
+    <div class="zh">塔基 / 释迦 / 斗拱 / 平坐 / 塔刹 / 木痕,8 章导览。</div>
+    <div class="meta"><span class="dir">yingxian-tower-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#C4A24E">
+    <div class="c1">吉萨 · <b>重现</b> </div>
+    <div class="brand">GIZA REIMAGINED</div>
+    <div class="zh">金字塔群 / 狮身人面像滚动导览,「重现」系列走向世界。</div>
+    <div class="meta"><span class="dir">giza-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#A9C7D8">
+    <div class="c1">泰姬陵 · <b>重现</b> </div>
+    <div class="brand">TAJ REIMAGINED</div>
+    <div class="zh">长池水镜 / 大理石内殿 / 宣礼塔滚动导览。</div>
+    <div class="meta"><span class="dir">taj-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#7C9A6D">
+    <div class="c1">吴哥窟 · <b>重现</b> </div>
+    <div class="brand">ANGKOR REIMAGINED</div>
+    <div class="zh">护城河 / 西长堤 / 花萼五塔滚动导览。</div>
+    <div class="meta"><span class="dir">angkor-reimagined/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#9E3B32"></i>机构复刻 · 中国二十古机械 <small>× 20 · 运动学均按文献数据验算</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#B08D57" href="sites/zhinanche/index.html">
+    <div class="c1">指南车 · <b>差动齿轮系</b></div>
+    <div class="brand">《宋史·舆服志》燕肃制(1027)</div>
+    <div class="zh">木仙人执杖指南,车虽回转而所指恒南。差动补偿比 <b>0.200 = r/W</b> 严格成立,直行/蛇行/环转 360°/手动四段试验,木人误差恒 0.000°。</div>
+    <div class="meta"><span class="dir">zhinanche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#B5A15F" href="sites/jiliguche/index.html">
+    <div class="c1">记里鼓车 · <b>齿轮系 100:1</b></div>
+    <div class="brand">《宋史·舆服志》卢道隆制(1027)</div>
+    <div class="zh">足轮经四级齿轮减速 <b>100:1</b>(立100→下10→旋10→中100),行一里下层木人<b>左右交替击鼓</b>,十里上层木人击镯;演示节奏压缩 50:1 并全程明示。</div>
+    <div class="meta"><span class="dir">jiliguche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7FB8A8" href="sites/longgu-shuiche/index.html">
+    <div class="c1">龙骨水车 · <b>链轮刮板循环</b></div>
+    <div class="brand">《天工开物·乃粒》翻车图</div>
+    <div class="zh">36 节闭合链沿<b>上行直段→上轮弧→下行→下轮弧</b>精确摆位,刮板源源提水。流量 Q=vAφ 三档实测与公式一致。</div>
+    <div class="meta"><span class="dir">longgu-shuiche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#9E3B32" href="sites/didongyi/index.html">
+    <div class="c1">候风地动仪 · <b>都柱倒立摆+八道</b></div>
+    <div class="brand">《后汉书·张衡传》(132)·冯锐复原思路</div>
+    <div class="zh">都柱倾达 6° 触发八方龙口吐丸——<b>触发方位=落丸方位</b>严格一致,半剖樽体可见都柱与八道。</div>
+    <div class="meta"><span class="dir">didongyi/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#4FA3C7" href="sites/tongche/index.html">
+    <div class="c1">筒车 · <b>立轮斜筒自汲</b></div>
+    <div class="brand">王祯《农书》筒车图</div>
+    <div class="zh">26 竹筒底部兜水、顶部倾入笧槽。流量 <b>Q=nVω/2π</b> 载入模拟 30s 自检,实测与公式一致。</div>
+    <div class="meta"><span class="dir">tongche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C8A96E" href="sites/shuidui/index.html">
+    <div class="c1">水碓 · <b>拨杆凸轮四碓</b></div>
+    <div class="brand">《天工开物》水碓图</div>
+    <div class="zh">拨杆相位差 90°,四碓连舂——压下/滑脱/落体(t=0.356s)状态机,撞击数与相位互锁断言。</div>
+    <div class="meta"><span class="dir">shuidui/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D8C08E" href="sites/louche/index.html">
+    <div class="c1">耧车 · <b>三管下种</b></div>
+    <div class="brand">王祯《农书》·西汉赵过三脚耧</div>
+    <div class="zh">耧斗调节板开度可调(←/→),三管落种均匀 <b>±2%</b>,沟内落点分布可视。</div>
+    <div class="meta"><span class="dir">louche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#E9C93C" href="sites/fengshan-che/index.html">
+    <div class="c1">风扇车 · <b>手摇风选</b></div>
+    <div class="brand">《天工开物》扇车图</div>
+    <div class="zh">糠秕轻被吹入远口、谷粒重落近口——偏移-粒重<b>分级可验算</b>,糠占比 ≈34% 实测。</div>
+    <div class="meta"><span class="dir">fengshan-che/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A9C7D8" href="sites/shuimo/index.html">
+    <div class="c1">水磨 · <b>立轮直驱</b></div>
+    <div class="brand">王祯《农书》水轮三事</div>
+    <div class="zh">立轮同轴直驱上磨(1:1),磨速=轮速;DRIVE 面板三级角标同步,出粉率 ∝ ω。</div>
+    <div class="meta"><span class="dir">shuimo/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C7E6A" href="sites/shuipai/index.html">
+    <div class="c1">水排 · <b>曲柄连杆滑块</b></div>
+    <div class="brand">王祯《农书》·东汉杜诗(31)</div>
+    <div class="zh">立轮曲柄连杆滑块驱动门式风箱——滑块位移<b>闭式公式逐帧断言</b>,λ=0.26 死点可见。</div>
+    <div class="meta"><span class="dir">shuipai/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C76A5A" href="sites/fengxiang/index.html">
+    <div class="c1">活塞风箱 · <b>双动活塞</b></div>
+    <div class="brand">《天工开物》冶铸鼓风</div>
+    <div class="zh">四枚薄板活门随压差启闭——活塞往复<b>任一行程恒出风</b>(连续性载入断言),炉火随风量旺衰。</div>
+    <div class="meta"><span class="dir">fengxiang/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C75B39" href="sites/tihuaji/index.html">
+    <div class="c1">提花机 · <b>挽花提沉+投梭</b></div>
+    <div class="brand">《天工开物·乃服》花机图</div>
+    <div class="zh">挽花工楼上提纤、织工投梭打筘——<b>8 纬循环纹样</b>逐位断言,布面纹理逐纬生长。</div>
+    <div class="meta"><span class="dir">tihuaji/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#6E6E6E" href="sites/paoshiji/index.html">
+    <div class="c1">抛石机 · <b>配重杠杆弹射</b></div>
+    <div class="brand">《元史》襄阳炮(1272)</div>
+    <div class="zh">能量法 ω=√(2mgh/I) 加速,弹道子步进积分——<b>射程与理论偏差 <1%</b>,←/→ 换配重发射。</div>
+    <div class="meta"><span class="dir">paoshiji/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#5B6E5A" href="sites/liannu/index.html">
+    <div class="c1">诸葛连弩 · <b>杠杆往复装填</b></div>
+    <div class="brand">《三国志》注引《魏氏春秋》</div>
+    <div class="zh">「一弩十矢俱发」——落矢/钩弦/脱牙状态机,矢匣倒数,<b>空匣停射</b>断言。</div>
+    <div class="meta"><span class="dir">liannu/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#B98A5E" href="sites/fangche/index.html">
+    <div class="c1">三锭脚踏纺车 · <b>绳传动 ×16.7</b></div>
+    <div class="brand">王祯《农书》木棉纺车图</div>
+    <div class="zh">双踏板相位差 90°,三绳圈分传三锭——传动比 <b>×16.7</b> 可验算,三锭同速。</div>
+    <div class="meta"><span class="dir">fangche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#B08D57" href="sites/shuiyun-yixiangtai/index.html">
+    <div class="c1">水运仪象台 · <b>天关天锁擒纵</b></div>
+    <div class="brand">苏颂《新仪象法要》(1092)</div>
+    <div class="zh">枢轮 36 斗注满失衡,天关天锁<b>间歇步进 10°/斗</b>——36 步恰一周,昼夜机轮随动,顶部浑仪。</div>
+    <div class="meta"><span class="dir">shuiyun-yixiangtai/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7FA8C7" href="sites/tonghu-dilou/index.html">
+    <div class="c1">铜壶滴漏 · <b>恒定水头四级壶</b></div>
+    <div class="brand">元代广州铜壶滴漏(1316)</div>
+    <div class="zh">日壶溢流保水头恒定,<b>Q=C·A·√(2gh)</b> 恒定,浮舟托箭百刻匀升。</div>
+    <div class="meta"><span class="dir">tonghu-dilou/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#88AACE" href="sites/jianyi/index.html">
+    <div class="c1">简仪 · <b>赤道式四游环</b></div>
+    <div class="brand">郭守敬创制(1276)</div>
+    <div class="zh">四游环绕极轴,<b>去极度=转角</b>(ψ=90°−δ),四星瞄准读数收敛断言。</div>
+    <div class="meta"><span class="dir">jianyi/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#F2A53A" href="sites/zoumadeng/index.html">
+    <div class="c1">走马灯 · <b>热气叶轮</b></div>
+    <div class="brand">《燕京岁时记》</div>
+    <div class="zh">烛数 n ↔ 转速 <b>ω=k·n</b> 阶梯响应(τ≈1.6s),←/→ 调烛,马影投罩。</div>
+    <div class="meta"><span class="dir">zoumadeng/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D4AF37" href="sites/beizhong-xianglu/index.html">
+    <div class="c1">被中香炉 · <b>万向支架</b></div>
+    <div class="brand">《西京杂记》丁缓</div>
+    <div class="zh">「机环转运四周而炉体常平」——<b>四元数补偿链</b>使炉体恒平 0.0000°(960 帧实测)。</div>
+    <div class="meta"><span class="dir">beizhong-xianglu/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#9E3B32"></i>机构复刻 · 中国古机械 第二批 <small>× 13 · 运动学均按文献数据验算</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#8FAE6B" href="sites/jiegao/index.html">
+    <div class="c1">桔槔 · <b>配重杠杆汲水</b></div>
+    <div class="brand">《庄子·天地》</div>
+    <div class="zh">「后重前轻,挈水若抽,数如泆汤」——竖桩横杆配重坠石,杠杆比 <b>2.2</b> 严格成立;俯身取满、松手自起,一俯一汲如泆汤。</div>
+    <div class="meta"><span class="dir">jiegao/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#6BA8A0" href="sites/lulu/index.html">
+    <div class="c1">辘轳 · <b>卷筒绞车汲水</b></div>
+    <div class="brand">汉画像石 · 《农政全书》</div>
+    <div class="zh">摇柄卷筒收放井绳,定滑轮省力——曲柄/卷筒半径比 <b>2.5</b>,汉式高井栏;抱瓮而灌自此为机井所代。</div>
+    <div class="meta"><span class="dir">lulu/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#4FA3C7" href="sites/gaozhuan-tongche/index.html">
+    <div class="c1">高转筒车 · <b>双链轮高扬程</b></div>
+    <div class="brand">王祯《农书》</div>
+    <div class="zh">上下双链轮周而复始,刮板小筒循环提水——链闭合周长 <b>0.70×14 = 9.80m</b>、链速 0.45m/s 可验算,扬程逾丈,倍于翻车。</div>
+    <div class="meta"><span class="dir">gaozhuan-tongche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A67B5B" href="sites/quyuanli/index.html">
+    <div class="c1">曲辕犁 · <b>犁评调节耕深</b></div>
+    <div class="brand">唐 · 陆龟蒙《耒耜经》</div>
+    <div class="zh">江东犁十一部件,犁评进退调深浅——耕深 <b>d = a·sinθ</b>,2.9–14.4cm 连续可调,犁壁翻垡面向一侧。</div>
+    <div class="meta"><span class="dir">quyuanli/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C7A252" href="sites/shuizhuan-dafangche/index.html">
+    <div class="c1">水转大纺车 · <b>水力八锭</b></div>
+    <div class="brand">王祯《农书》</div>
+    <div class="zh">水轮经大绳轮增速——传动比 <b>0.448/0.032 = 14</b> 严格成立,八锭齐转加捻成缕,昼夜纺绩胜人力数倍。</div>
+    <div class="meta"><span class="dir">shuizhuan-dafangche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D9A8A0" href="sites/raosiche/index.html">
+    <div class="c1">缫丝车 · <b>脚踏卷绕</b></div>
+    <div class="brand">《天工开物·乃服》</div>
+    <div class="zh">脚踏曲柄转丝框,<b>1:1 偏摆导丝</b>往复 0.28m——茧丝过送丝眼绕框成生丝,丝框匀速、导丝匀摆。</div>
+    <div class="meta"><span class="dir">raosiche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#B5A28C" href="sites/zhamian-jiaochu/index.html">
+    <div class="c1">轧棉搅车 · <b>双辊轧籽</b></div>
+    <div class="brand">《天工开物·乃服》</div>
+    <div class="zh">双木辊<b>外啮合 i=1 反向回转</b>,皮棉过辊隙牵出、棉籽回落;脚踏曲柄行程 0.20m,轧花去籽如飞。</div>
+    <div class="meta"><span class="dir">zhamian-jiaochu/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C9A6B" href="sites/zheche/index.html">
+    <div class="c1">蔗车 · <b>双石辊榨汁</b></div>
+    <div class="brand">《天工开物·甘嗜》</div>
+    <div class="zh">双石立辊顶齿轮<b>外啮合 i=1</b> 反向对滚,牛拽横杆转动——甘蔗横过 <b>0.06m 辊隙</b>压扁出汁,蔗汁流入石槽。</div>
+    <div class="meta"><span class="dir">zheche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A9834F" href="sites/youzha/index.html">
+    <div class="c1">油榨 · <b>悬锤撞楔</b></div>
+    <div class="brand">《天工开物·膏液》</div>
+    <div class="zh">悬锤荡撞木楔,逼紧麹饼束——撞楔锤速 <b>2.64m/s</b>、饼束压缩 <b>18%</b> 可验算,油自缝中渗出入盘。</div>
+    <div class="meta"><span class="dir">youzha/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7C9A6D" href="sites/zhibuji/index.html">
+    <div class="c1">织布机 · <b>双蹑双综</b></div>
+    <div class="brand">汉画像石斜织机</div>
+    <div class="zh">双蹑踏板交替升降双综开口,<b>梭口 0.09m</b>——梭子穿行引纬、筘打纬压实,纬线逐梭成布。</div>
+    <div class="meta"><span class="dir">zhibuji/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#5C7AA8" href="sites/hunyi/index.html">
+    <div class="c1">浑仪 · <b>三重环圈</b></div>
+    <div class="brand">明正统制(现存)</div>
+    <div class="zh">六合仪定、三辰仪转、四游仪窥——极轴倾角 <b>50.1°</b> 严格成立,窥管以四元数法向解析指向,终段瞄准织女星。</div>
+    <div class="meta"><span class="dir">hunyi/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#3F8C7F" href="sites/shuiyun-huntianyi/index.html">
+    <div class="c1">水运浑天仪 · <b>漏壶驱浑象</b></div>
+    <div class="brand">张衡《浑天仪注》</div>
+    <div class="zh">漏壶注水转水轮,三级齿轮减速 <b>i=28</b>——浑象一转即一日(×1200 演示),蓂荚按日升落,与天相应。</div>
+    <div class="meta"><span class="dir">shuiyun-huntianyi/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C0996B" href="sites/xiangfeng-tongwu/index.html">
+    <div class="c1">相风铜乌 · <b>欠阻尼对风</b></div>
+    <div class="brand">《三辅黄图》汉灵台</div>
+    <div class="zh">铜乌遇风乃动,乌首恒指风来向——欠阻尼二阶对风 <b>ζω=1.6</b>,稳态误差 <b>0°</b>(解析严格),阵风 ±90° 过冲一次回落。</div>
+    <div class="meta"><span class="dir">xiangfeng-tongwu/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#D9862F"></i>纸艺世界 · 3D 探索 <small>× 1 · 忠实移植自 xikhar/papertrails(MIT)</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#D9862F" href="papertrails/dist-file/index.html">
+    <div class="c1">Papertrails · <b>无尽纸境探索</b></div>
+    <div class="brand">PAPERTRAILS · THREE.JS · POP-UP BOOK</div>
+    <div class="zh">一本会走路的立体书:WFC 程序化纸页世界,走近时纸片<b>逐层折起立住</b>;WASD / 点击行走,Shift 奔跑,Tab 翻开<b>纸艺地图页</b>,N 切昼夜(灯笼暖光 + 萤火虫),V 换视角。源码与手绘资产完整保留原作署名。</div>
+    <div class="meta"><span class="dir">papertrails/dist-file/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#D2452F"></i>创意动效 <small>× 5</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <div class="card disabled" style="--accent:#D2452F">
+    <div class="c1">赤龍 · <b>90 秒循环龙片</b> </div>
+    <div class="brand">CRIMSON LOONG · THREE.JS</div>
+    <div class="zh">单 HTML 文件的循环动画:零素材、全代码生成的一条赤龙。</div>
+    <div class="meta"><span class="dir">crimson-loong-replica/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#7E6BC4">
+    <div class="c1">图片拖尾 · <b>效果复刻</b> </div>
+    <div class="brand">IMAGE TRAIL · CODROPS SKETCHES 005–007</div>
+    <div class="zh">Codrops 经典图片拖尾交互的逐帧复刻(原生 ES 模块)。</div>
+    <div class="meta"><span class="dir">image-trail-effect/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#4FA8A0">
+    <div class="c1">词语筑成的街 · <b>东京词云</b> </div>
+    <div class="brand">TOKYO WORD CITY 3D</div>
+    <div class="zh">东京都心的中文词云 3D——词语就是建筑,概念原创复刻。</div>
+    <div class="meta"><span class="dir">tokyo-word-city-3d/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#4E9BB0">
+    <div class="c1">词语筑成的街 · <b>武汉词云</b> </div>
+    <div class="brand">WUHAN WORD CITY 3D</div>
+    <div class="zh">江城的中文词云 3D,东京词云的姊妹篇。</div>
+    <div class="meta"><span class="dir">wuhan-word-city-3d/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+  <div class="card disabled" style="--accent:#88AACE">
+    <div class="c1">词语筑成的街 · <b>宜昌词云</b> </div>
+    <div class="brand">YICHANG WORD CITY 3D</div>
+    <div class="zh">宜昌的中文词云 3D,词云系列回到系列首作的城市。</div>
+    <div class="meta"><span class="dir">yichang-word-city-3d/</span><span class="warn">未发布 · 源缺失</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#1899A6"></i>海岛钓鱼 · 开放世界小游戏 <small>× 1 · 题材复刻自 dgreenheck/tidewater(MIT)</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#1899A6" href="sites/tidewater-replica/index.html">
+    <div class="c1">潮水 · <b>海岛钓鱼</b></div>
+    <div class="brand">TIDEWATER REPLICA · 题材复刻 · MIT</div>
+    <div class="zh">低多边形海岛钓鱼的题材复刻:按住空格蓄力抛竿、浮漂猛沉瞬间刺鱼、<b>绿区控线搏鱼</b>(绷过头会断线);12 种加勒比渔获按渔场与时段出没,天黑前卖给 Joe、去 Marta 升级竿线轮灯;可开船出海,一昼夜 8 分钟,深海偶有鲸跃彩蛋。零构建,双击可用。</div>
+    <div class="meta"><span class="dir">tidewater-replica/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#2AA3C4"></i>桌面玩具 · 物理小游戏 <small>× 1 · 题材复刻自 franky-adl/water-ring-toss-game(MIT)</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#2AA3C4" href="sites/shuizhong-taoquan/index.html">
+    <div class="c1">水中套圈 · <b>手持水动机</b></div>
+    <div class="brand">WATER RING TOSS · 题材复刻 · MIT</div>
+    <div class="zh">复刻 franky-adl/water-ring-toss-game:1960 年代手持水动机玩具,<b>六只彩色圆环</b>在透明水腔里缓缓下沉,按玩具上的<b>红 / 蓝按钮</b>从底部喷口激起水流把环抛起——翻着跟头套上两根立柱,<b>轻按慢压才有手感,手太猛套好的环也会被顶飞</b>;圆环刚体物理 + 圆角腔壁支撑函数碰撞 + 套柱堆叠 / 顶出状态机,通关有小和弦庆祝。全程序化几何与贴图,零构建双击可用。</div>
+    <div class="meta"><span class="dir">shuizhong-taoquan/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#E8590C"></i>科普可视化 · 交互演示 <small>× 2 · 开源题材复刻,署名见各站</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#E8590C" href="sites/open-anatomy-3d/index.html">
+    <div class="c1">开放人体解剖 · <b>交互式 3D</b></div>
+    <div class="brand">OPEN ANATOMY 3D · BODYPARTS3D · CC BY 4.0</div>
+    <div class="zh">复刻 MervinR07/open-anatomy-3d:男 / 女两套全身模型,<b>7 大系统 147 个结构</b>逐个悬停识别、点击固定标注卡片,引线随视角实时跟随;七层系统独立开关,关节是隐藏热点,女性躯体含子宫 / 卵巢等专属器官。全量中文译名,模型 Base64 内置,file:// 双击可用。</div>
+    <div class="meta"><span class="dir">open-anatomy-3d/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D9A863" href="sites/chladni-cymatics/index.html">
+    <div class="c1">克拉尼声振图案 · <b>沙粒共振</b></div>
+    <div class="brand">CHLADNI CYMATICS · 题材复刻 · MIT</div>
+    <div class="zh">复刻 ekimroyrp/260610_ChladniCymatics:3 万颗沙粒洒在振动的方形钢板上,<b>解析式共振梯插值</b>让 345–5865 Hz 任意频率都呈现连续变形的对称节线花纹;拖旋钮、点预设、开扫频看图案流动,<b>振幅热图</b>直接看见「沙为何聚在节线」,WebAudio 同频发声可静音。实测落线率 100%,零构建双击可用。</div>
+    <div class="meta"><span class="dir">chladni-cymatics/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div id="foot">
+  <span>GPT-SITES · 本地工作区</span>
+  <span>35 个子模块 · 大部分零构建</span>
+</div>
+</body>
+</html>
