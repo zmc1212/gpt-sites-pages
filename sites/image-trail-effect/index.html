@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Image Trail Effect · Codrops 复刻</title>
+	<meta name="description" content="复刻 Codrops Sketches 005–007 的图片拖尾效果:同一张图堆叠多层,以不同插值系数跟随鼠标形成回声拖尾。">
+	<link rel="stylesheet" href="css/style.css">
+	<script>document.documentElement.classList.replace('no-js', 'js');</script>
+</head>
+<body>
+	<main>
+		<header class="frame">
+			<h1 class="frame__title">Image Trail Effect <span>复刻自 Codrops Sketches 005–007</span></h1>
+			<nav class="frame__variants" aria-label="变体切换">
+				<button type="button" data-variant="opaque" class="is-active" aria-pressed="true">Opaque</button>
+				<button type="button" data-variant="semitransparent" aria-pressed="false">Semitransparent</button>
+				<button type="button" data-variant="rotation" aria-pressed="false">Rotation</button>
+				<button type="button" id="next-image" class="frame__next">换一张图 →</button>
+			</nav>
+			<nav class="frame__links" aria-label="参考链接">
+				<a href="https://tympanus.net/Sketches/005-image-motion-trail-opaque/" target="_blank" rel="noopener">原版 Demo</a>
+				<a href="https://github.com/codrops/codrops-sketches" target="_blank" rel="noopener">codrops-sketches (MIT)</a>
+			</nav>
+		</header>
+		<div class="content">
+			<!-- JS 可用前先显示静态图;脚本启动后会用堆叠图层替换它 -->
+			<div class="trail" style="background-image:url(assets/art-1.svg)"></div>
+		</div>
+		<p class="frame__hint">移动鼠标,图片分层拖尾跟随 · 触屏可拖动</p>
+	</main>
+	<div id="entry-error" class="entry-error" hidden>
+		<strong>页面脚本未加载</strong>
+		<p id="entry-error__msg"></p>
+	</div>
+	<script>
+	// 入口加载器:file:// 用 IIFE 产物,http(s) 用 ES 模块源码(工作区 AGENTS.md 约定)
+	(function () {
+		var isFile = location.protocol === 'file:';
+		var s = document.createElement('script');
+		if (isFile) {
+			s.src = './dist/image-trail.iife.js';
+		} else {
+			s.type = 'module';
+			s.src = './src/main.js';
+		}
+		var banner = document.getElementById('entry-error');
+		var msg = document.getElementById('entry-error__msg');
+		function fail(text) { banner.hidden = false; msg.textContent = text; }
+		s.onerror = function () {
+			fail(isFile
+				? '未找到 dist/image-trail.iife.js。双击打开前请先生成产物:npm run build(详见 AGENTS.md);或改用本地 HTTP 访问。'
+				: 'ES 模块入口 ./src/main.js 加载失败。请确认通过本地 HTTP 服务(如 python -m http.server 8080)访问本目录,且未改动 src 文件名。');
+		};
+		document.head.appendChild(s);
+		window.setTimeout(function () {
+			if (!window.__APP_READY) {
+				fail('脚本已加载但场景未启动(window.__APP_READY 未置位),请打开浏览器控制台查看报错。');
+			}
+		}, 3500);
+	})();
+	</script>
+</body>
+</html>

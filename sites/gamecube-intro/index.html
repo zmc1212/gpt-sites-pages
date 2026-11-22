@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameCube 开机动画 · 复刻</title>
+<meta name="description" content="浏览器里的 GameCube 开机动画复刻:翻滚小方块、残影、G 标志组装,可拖时间轴、倒放、变速、换配色">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 10v12L16 29 3 22V10z' fill='%237d6cf0'/%3E%3Cpath d='M16 3 29 10l-13 7L3 10z' fill='%23b7a9ef'/%3E%3Cpath d='M16 17v12L3 22V10z' fill='%235a48b5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./style.css">
+<style>html,body{background:#000}</style>
+</head>
+<body>
+<canvas id="webgl" class="webgl"></canvas>
+
+<div id="fatal" class="fatal" hidden></div>
+
+<div id="ui" class="ui idle">
+  <div class="bar">
+    <button class="btn btn-primary" id="playPause" title="播放 / 暂停(空格)" aria-label="播放 / 暂停(空格)">
+      <svg viewBox="0 0 24 24"><path id="playPath" d="M8 5v14l11-7z"/></svg>
+    </button>
+    <div class="transport">
+      <button class="btn" id="rewind" title="回到开头(R)" aria-label="回到开头(R)">
+        <svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg>
+      </button>
+      <button class="btn" id="frameBack" title="上一帧(,)" aria-label="上一帧(,)">
+        <svg viewBox="0 0 24 24"><path d="M16 5v14L7 12zM6 5h1.5v14H6z"/></svg>
+      </button>
+      <button class="btn" id="frameForward" title="下一帧(.)" aria-label="下一帧(.)">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l9-7zM16.5 5H18v14h-1.5z"/></svg>
+      </button>
+    </div>
+    <span class="time" id="timeCurrent">0:00</span>
+    <input type="range" class="seek" id="seek" min="0" max="7.1167" step="0.001" value="0" aria-label="时间轴">
+    <button class="btn" id="muteToggle" title="静音(M)" aria-label="静音(M)">
+      <svg viewBox="0 0 24 24"><path id="mutePath" d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
+    </button>
+    <input type="range" class="volume" id="volume" min="0" max="1" step="0.01" value="0.9" aria-label="音量">
+    <button class="btn" id="infoToggle" title="快捷键(I)" aria-label="快捷键(I)" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+    </button>
+    <button class="btn" id="settingsToggle" title="设置(S)" aria-label="设置(S)" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
+  </div>
+
+  <div class="panel settings" id="settings" hidden>
+    <section>
+      <h3>播放</h3>
+      <label class="field slider">
+        <span>变速</span>
+        <input type="range" id="speed" min="0.01" max="4" step="0.01" value="1">
+        <output id="speedVal">1×</output>
+        <button type="button" class="reset" id="speedReset" title="恢复默认" aria-label="恢复默认变速">
+          <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        </button>
+      </label>
+      <label class="field switch"><span>倒放</span><input type="checkbox" id="reverse"><i></i></label>
+      <label class="field switch"><span>循环</span><input type="checkbox" id="loop" checked><i></i></label>
+    </section>
+    <section>
+      <h3>视图</h3>
+      <label class="field switch"><span>轨道视差</span><input type="checkbox" id="orbit" checked><i></i></label>
+      <label class="field slider">
+        <span>轨道强度</span>
+        <input type="range" id="orbitIntensity" min="1" max="5" step="0.1" value="1">
+        <output id="orbitIntensityVal">1</output>
+        <button type="button" class="reset" id="orbitIntensityReset" title="恢复默认" aria-label="恢复默认轨道强度">
+          <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        </button>
+      </label>
+      <label class="field switch"><span>线框</span><input type="checkbox" id="wireframe"><i></i></label>
+      <div class="field swatches">
+        <span>配色</span>
+        <div class="swatch-group" id="color" role="radiogroup" aria-label="配色"></div>
+      </div>
+    </section>
+    <section>
+      <h3>声音</h3>
+      <label class="field select">
+        <span>音轨</span>
+        <select id="track"></select>
+      </label>
+    </section>
+  </div>
+
+  <div class="panel info" id="info" hidden>
+    <h3>键盘快捷键</h3>
+    <div class="shortcut-group">
+      <h4>传输</h4>
+      <div class="shortcut"><span class="keys"><kbd>空格</kbd></span><span>播放 / 暂停</span></div>
+      <div class="shortcut"><span class="keys"><kbd>R</kbd><kbd>Home</kbd></span><span>回到开头</span></div>
+      <div class="shortcut"><span class="keys"><kbd>End</kbd></span><span>跳到结尾</span></div>
+    </div>
+    <div class="shortcut-group">
+      <h4>定位</h4>
+      <div class="shortcut"><span class="keys"><kbd>←</kbd><kbd>→</kbd></span><span>前后 0.5 秒</span></div>
+      <div class="shortcut"><span class="keys"><kbd>,</kbd><kbd>.</kbd></span><span>上一帧 / 下一帧</span></div>
+      <div class="shortcut"><span class="keys"><kbd>0</kbd>–<kbd>9</kbd></span><span>跳到 0–90%</span></div>
+    </div>
+    <div class="shortcut-group">
+      <h4>播放</h4>
+      <div class="shortcut"><span class="keys"><kbd>A</kbd><kbd>D</kbd></span><span>减速 / 加速</span></div>
+      <div class="shortcut"><span class="keys"><kbd>B</kbd></span><span>倒放开关</span></div>
+      <div class="shortcut"><span class="keys"><kbd>L</kbd></span><span>循环开关</span></div>
+    </div>
+    <div class="shortcut-group">
+      <h4>声音</h4>
+      <div class="shortcut"><span class="keys"><kbd>Q</kbd><kbd>E</kbd></span><span>上一条 / 下一条音轨</span></div>
+      <div class="shortcut"><span class="keys"><kbd>↑</kbd><kbd>↓</kbd></span><span>音量</span></div>
+      <div class="shortcut"><span class="keys"><kbd>M</kbd></span><span>静音</span></div>
+    </div>
+    <div class="shortcut-group">
+      <h4>视图 / 面板</h4>
+      <div class="shortcut"><span class="keys"><kbd>O</kbd></span><span>轨道视差开关</span></div>
+      <div class="shortcut"><span class="keys"><kbd>W</kbd></span><span>线框开关</span></div>
+      <div class="shortcut"><span class="keys"><kbd>S</kbd></span><span>设置面板</span></div>
+      <div class="shortcut"><span class="keys"><kbd>I</kbd></span><span>本面板</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="boot" class="boot">
+  <div class="boot-card">
+    <div class="boot-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32"><path d="M16 3 29 10v12L16 29 3 22V10z" fill="#6350bb"/><path d="M16 3 29 10l-13 7L3 10z" fill="#efeafc"/><path d="M16 17v12L3 22V10z" fill="#4a3a96"/></svg>
+    </div>
+    <h1>GameCube 开机动画 · 复刻</h1>
+    <p class="boot-sub">紫色小方块沿格点翻滚一周,跃入大立方一角,组出经典的「G」——全程代码生成,可拖时间轴、倒放、变速、换配色。</p>
+    <button id="bootStart" class="boot-start">开 始</button>
+    <p class="boot-credit">
+      题材复刻自开源项目 <a href="https://github.com/vaexenc/gcintro" target="_blank" rel="noopener">vaexenc/gcintro</a>(MIT)·
+      收录于 <a href="https://threejs.cc/?cat=open-source" target="_blank" rel="noopener">threejs.cc 开源专题</a> ·
+      本站为原创简化实现,未复用原仓库代码与素材
+    </p>
+  </div>
+</div>
+
+<script src="./vendor/three.min.js"></script>
+<script src="./src/palette.js"></script>
+<script src="./src/scene.js"></script>
+<script src="./src/timeline.js"></script>
+<script src="./src/audio.js"></script>
+<script src="./src/player.js"></script>
+<script src="./src/ui.js"></script>
+<script src="./src/main.js"></script>
+</body>
+</html>

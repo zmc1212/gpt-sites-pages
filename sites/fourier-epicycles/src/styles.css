@@ -1,0 +1,95 @@
+/* 傅里叶级数画图 — 图纸风界面(与工作区各站同款语汇) */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: #0D1B2A;
+  color: #E9EEF2;
+  font-family: "Menlo", "SF Mono", monospace;
+  overflow: hidden;
+}
+#sheet { height: 100vh; display: flex; align-items: stretch; justify-content: center; }
+#stage-wrap {
+  position: relative;
+  width: min(100vw, 1720px);
+  height: 100vh;
+  border-left: 1px dashed rgba(233,238,242,0.25);
+  border-right: 1px dashed rgba(233,238,242,0.25);
+  background: linear-gradient(180deg, #16324A 0%, #102338 100%);
+  overflow: hidden;
+}
+#view { position: absolute; inset: 0; display: block; touch-action: none; cursor: crosshair; }
+
+.card {
+  position: absolute;
+  background: rgba(13, 27, 42, 0.82);
+  border: 1px solid rgba(176, 141, 87, 0.55);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(3px);
+  max-width: 460px;
+  z-index: 5;
+}
+#card-title { top: 14px; left: 14px; }
+#card-title .t1 { font-size: 13px; font-weight: 700; color: #E9C93C; letter-spacing: 0.4px; }
+#card-title .t2 { font-size: 11px; color: rgba(233,238,242,0.85); margin-top: 5px; line-height: 1.5; }
+#card-title .t3 { font-size: 10px; color: rgba(233,238,242,0.5); margin-top: 5px; }
+#card-status { top: 14px; right: 14px; min-width: 200px; }
+#card-status .k { font-size: 9px; color: rgba(233,238,242,0.5); letter-spacing: 1px; }
+#card-status .mode { font-size: 17px; font-weight: 700; margin: 2px 0 6px; }
+#card-status .row { display: flex; justify-content: space-between; font-size: 10.5px; gap: 16px; padding: 1.5px 0; }
+#card-status .row .k { color: rgba(233,238,242,0.55); }
+#card-status .row b { color: #E9EEF2; }
+
+#side {
+  position: absolute;
+  top: 118px; right: 14px; bottom: 34px;
+  width: 236px;
+  display: flex; flex-direction: column; gap: 8px;
+  overflow-y: auto;
+  z-index: 5;
+}
+.panel {
+  background: rgba(13, 27, 42, 0.82);
+  border: 1px solid rgba(176, 141, 87, 0.4);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.panel header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.panel header b { font-size: 10.5px; color: #E9C93C; letter-spacing: 0.5px; }
+.panel header .meta { font-size: 9.5px; color: rgba(233,238,242,0.6); }
+.panel .body { font-size: 10px; }
+.btns { display: flex; flex-wrap: wrap; gap: 5px; }
+.btns button {
+  background: rgba(233,238,242,0.08);
+  border: 1px solid rgba(233,238,242,0.25);
+  color: #E9EEF2;
+  font: 600 10px Menlo, monospace;
+  border-radius: 5px;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+.btns button.on { background: rgba(233,201,60,0.2); border-color: #E9C93C; color: #E9C93C; }
+.btns button:hover { border-color: rgba(233,238,242,0.6); }
+input[type="range"] { width: 100%; accent-color: #E9C93C; }
+.rowline { display: flex; justify-content: space-between; padding: 1.5px 0; font-size: 10px; }
+.rowline span { color: rgba(233,238,242,0.55); }
+.rowline b { color: #E9EEF2; font-weight: 600; }
+
+.corner {
+  position: absolute;
+  bottom: 8px;
+  font-size: 9px;
+  color: rgba(233,238,242,0.42);
+  z-index: 5;
+}
+#corner-left { left: 14px; }
+#corner-right { right: 14px; }
+
+#boot-error {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(140, 47, 30, 0.94);
+  border-radius: 10px; padding: 18px 26px; z-index: 20;
+  font-size: 13px; line-height: 1.7; max-width: 560px;
+}
+#boot-error b { color: #E9C93C; }
+#boot-error code { background: rgba(0,0,0,0.4); padding: 1px 6px; border-radius: 4px; }

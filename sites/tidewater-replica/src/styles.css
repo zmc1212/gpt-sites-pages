@@ -1,0 +1,192 @@
+/* 潮水 · 海岛钓鱼 — HUD 样式(零外部资源,系统字体) */
+:root {
+  --ink: #1d2b2e;
+  --cream: #f6f1e4;
+  --teal: #1899a6;
+  --teal-deep: #0c6b74;
+  --amber: #f2a53a;
+  --coral: #e86a4a;
+  --green: #4caf6e;
+  --shadow: 0 10px 30px rgba(10, 40, 46, .35);
+  --card-bg: rgba(16, 44, 48, .72);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, "Segoe UI", sans-serif;
+  background: #0a2a30; color: var(--cream);
+  user-select: none; -webkit-user-select: none;
+}
+.hidden { display: none !important; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; }
+
+/* ---- 卡片 ---- */
+.card {
+  position: fixed; z-index: 20;
+  background: var(--card-bg); border: 1px solid rgba(246, 241, 228, .18);
+  border-radius: 10px; padding: 10px 14px;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+}
+#card-title { top: 16px; left: 16px; max-width: 460px; }
+#card-title .t1 { font-size: 17px; font-weight: 700; letter-spacing: .5px; }
+#card-title .t1 b, #card-title .t1 .en { color: var(--amber); }
+#card-title .t2 { font-size: 12px; color: rgba(246,241,228,.75); margin-top: 4px; line-height: 1.5; }
+#card-title .t3 { font-size: 11px; color: rgba(246,241,228,.5); margin-top: 5px; letter-spacing: .3px; }
+#card-status { top: 16px; right: 16px; min-width: 178px; }
+#card-status .row { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; line-height: 1.75; }
+#card-status .k { color: rgba(246,241,228,.55); }
+#card-status b { font-weight: 700; color: var(--cream); }
+#st-coins { color: var(--amber) !important; }
+#st-zone { color: #7fd4dc !important; }
+#minimap { display: block; margin-top: 8px; border-radius: 8px; }
+
+/* ---- 张力条 ---- */
+#tension-wrap {
+  position: fixed; z-index: 22; left: 50%; bottom: 84px; transform: translateX(-50%);
+  width: min(420px, 60vw); padding: 10px 14px 12px;
+  background: var(--card-bg); border-radius: 10px; border: 1px solid rgba(246,241,228,.18);
+  backdrop-filter: blur(6px); box-shadow: var(--shadow);
+}
+.tn-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 7px; }
+#tn-fish { font-weight: 700; color: #ffd9a0; }
+#tn-dist { color: rgba(246,241,228,.75); }
+#tension-bar {
+  position: relative; height: 18px; border-radius: 9px; overflow: hidden;
+  background: #0b1f22; border: 1px solid rgba(246,241,228,.25);
+}
+.tn-band { position: absolute; top: 0; bottom: 0; left: 0; width: 35%; background: rgba(232, 106, 74, .3); }
+.tn-band.green { left: 35%; width: 35%; background: rgba(76, 175, 110, .35); }
+#tn-fill { position: absolute; top: 0; bottom: 0; left: 0; width: 0%; background: linear-gradient(90deg, #e86a4a, #f2c94c, #4caf6e); opacity: .85; }
+#tn-cursor { position: absolute; top: -2px; bottom: -2px; left: 0; width: 3px; background: #fff; box-shadow: 0 0 6px #fff; }
+.tn-tip { font-size: 11px; color: rgba(246,241,228,.55); margin-top: 7px; text-align: center; }
+
+/* ---- 提示胶囊 ---- */
+#hint-pill {
+  position: fixed; z-index: 20; left: 50%; bottom: 26px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card-bg); border: 1px solid rgba(246,241,228,.18);
+  padding: 8px 16px; border-radius: 999px; font-size: 13px;
+  backdrop-filter: blur(6px); box-shadow: var(--shadow); max-width: 72vw;
+}
+#hint-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); flex: none; }
+#hint-dot.action { background: var(--coral); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+
+/* ---- 角标 ---- */
+.corner {
+  position: fixed; z-index: 18; bottom: 14px; font-size: 10.5px; letter-spacing: .4px;
+  color: rgba(246,241,228,.42); text-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+#corner-left { left: 16px; } #corner-right { right: 16px; }
+
+/* ---- toast ---- */
+#toasts { position: fixed; z-index: 40; top: 70px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast {
+  background: rgba(16,44,48,.9); border: 1px solid rgba(246,241,228,.25); color: var(--cream);
+  padding: 8px 18px; border-radius: 999px; font-size: 13px; box-shadow: var(--shadow);
+  animation: toast-in .25s ease-out; max-width: 60vw;
+}
+.toast.money { color: var(--amber); border-color: rgba(242,165,58,.5); }
+.toast.bad { color: #ff9d8a; border-color: rgba(232,106,74,.5); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } }
+
+/* ---- 浮动价签 ---- */
+#fly-tag {
+  position: fixed; z-index: 21; padding: 6px 12px; font-size: 12px;
+  background: var(--cream); color: var(--ink); border-radius: 8px;
+  box-shadow: var(--shadow); transform: translate(-50%, -130%);
+  pointer-events: none; white-space: nowrap;
+}
+
+/* ---- 面板 ---- */
+#overlay {
+  position: fixed; inset: 0; z-index: 50; background: rgba(6, 24, 28, .45);
+  display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+}
+.panel {
+  width: min(560px, 92vw); max-height: 82vh; overflow-y: auto;
+  background: #103438; border: 1px solid rgba(246,241,228,.2); border-radius: 14px;
+  padding: 20px 24px; box-shadow: var(--shadow);
+}
+.panel::-webkit-scrollbar { width: 8px; }
+.panel::-webkit-scrollbar-thumb { background: rgba(246,241,228,.25); border-radius: 4px; }
+.p-head { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--cream); }
+.p-head small { font-size: 12px; font-weight: 400; color: rgba(246,241,228,.6); margin-left: 8px; }
+.p-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.btn {
+  font: inherit; font-size: 13px; cursor: pointer; padding: 8px 18px;
+  background: rgba(246,241,228,.1); color: var(--cream);
+  border: 1px solid rgba(246,241,228,.3); border-radius: 8px;
+}
+.btn:hover { background: rgba(246,241,228,.18); }
+.btn.primary { background: var(--teal-deep); border-color: var(--teal); }
+.btn.primary:hover { background: var(--teal); }
+.btn.danger { color: #ff9d8a; border-color: rgba(232,106,74,.5); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* 渔获卡 */
+#panel-catch { text-align: center; width: min(400px, 92vw); }
+#catch-art { font-size: 54px; line-height: 1.1; margin: 6px 0 10px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.4)); }
+.c-name { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+.c-stars { color: var(--amber); font-size: 15px; letter-spacing: 3px; margin: 4px 0 10px; }
+.c-rows { display: flex; justify-content: center; gap: 22px; margin: 6px 0 10px; }
+.c-rows div { display: flex; flex-direction: column; }
+.c-rows span { font-size: 11px; color: rgba(246,241,228,.55); }
+.c-rows b { font-size: 15px; }
+.c-badge { margin: 4px auto 0; display: inline-block; background: rgba(242,165,58,.18); color: var(--amber); border: 1px solid rgba(242,165,58,.5); padding: 3px 12px; border-radius: 999px; font-size: 12px; }
+.c-flavor { font-size: 12px; color: rgba(246,241,228,.6); margin-top: 10px; line-height: 1.5; }
+
+/* 卖鱼 / 商店 / 图鉴 列表 */
+.item-row {
+  display: flex; align-items: center; gap: 12px; padding: 9px 12px; margin-bottom: 8px;
+  background: rgba(246,241,228,.06); border: 1px solid rgba(246,241,228,.12); border-radius: 10px; font-size: 13px;
+}
+.item-row .ico { font-size: 20px; flex: none; }
+.item-row .grow { flex: 1; min-width: 0; }
+.item-row .sub { font-size: 11px; color: rgba(246,241,228,.55); margin-top: 2px; }
+.item-row .price { font-weight: 700; color: var(--amber); white-space: nowrap; }
+.item-row .pips { color: var(--amber); letter-spacing: 2px; font-size: 11px; }
+.sell-total { text-align: right; font-size: 14px; margin-top: 10px; color: rgba(246,241,228,.8); }
+.sell-total b { color: var(--amber); font-size: 18px; }
+.empty-note { text-align: center; color: rgba(246,241,228,.5); font-size: 13px; padding: 24px 0; }
+
+/* 图鉴 */
+.log-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; margin-bottom: 6px; border-radius: 10px; font-size: 13px; background: rgba(246,241,228,.05); border: 1px solid rgba(246,241,228,.1); }
+.log-row.locked { opacity: .45; filter: grayscale(.6); }
+.log-row .ico { font-size: 18px; }
+.log-row .zones { font-size: 11px; color: #7fd4dc; }
+.log-row .stars { color: var(--amber); font-size: 11px; letter-spacing: 2px; }
+
+/* 帮助 */
+.help-body { font-size: 13px; line-height: 1.8; color: rgba(246,241,228,.85); }
+.help-body p { margin-bottom: 10px; }
+.help-body b { color: var(--amber); }
+.help-body kbd { background: rgba(246,241,228,.14); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+.help-body .credit { font-size: 11.5px; color: rgba(246,241,228,.5); border-top: 1px dashed rgba(246,241,228,.2); padding-top: 10px; }
+
+/* ---- 首次引导 ---- */
+#guide { position: fixed; inset: 0; z-index: 60; background: rgba(6, 24, 28, .6); display: flex; align-items: center; justify-content: center; }
+.g-box { width: min(480px, 92vw); background: #103438; border: 1px solid rgba(246,241,228,.25); border-radius: 16px; padding: 28px 30px; box-shadow: var(--shadow); }
+.g-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; text-align: center; }
+.g-sub { text-align: center; font-size: 12px; color: rgba(246,241,228,.55); margin: 6px 0 18px; letter-spacing: 1px; }
+.g-steps > div { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; }
+.g-steps b { font-size: 15px; color: var(--amber); }
+.g-steps span { font-size: 12.5px; color: rgba(246,241,228,.75); line-height: 1.6; }
+#guide-start { width: 100%; margin-top: 6px; padding: 11px; font-size: 15px; }
+
+/* ---- 启动失败横幅 ---- */
+#boot-fail {
+  position: fixed; z-index: 99; left: 50%; top: 40%; transform: translate(-50%, -50%);
+  max-width: 560px; background: #2c1512; border: 1px solid #a3543c; border-radius: 12px;
+  padding: 20px 26px; font-size: 14px; line-height: 2; color: #ffd9cf;
+}
+#boot-fail code { background: rgba(255,255,255,.1); padding: 1px 6px; border-radius: 4px; }
+
+/* 小屏适配 */
+@media (max-width: 760px) {
+  #card-title .t2, #card-title .t3 { display: none; }
+  #corner-left, #corner-right { display: none; }
+  #card-status { transform: scale(.9); transform-origin: top right; }
+}

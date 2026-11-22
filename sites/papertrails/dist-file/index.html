@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Papertrails</title>
+    <meta name="description" content="Explore an endless paper world. Wander through handcrafted villages, forests, and winding trails in Papertrails." />
+    <!--
+      Papertrails - explore an endless paper world.
+      Faithful local port of https://github.com/xikhar/papertrails (MIT, (c) Shikhar).
+      This dist-file/ build runs from file:// : game.js is a classic IIFE script and every
+      runtime asset ships inline in assets-data.js (window.__PAPERTRAILS_ASSETS__).
+    -->
+    <style>
+      html, body { cursor: none; margin: 0; height: 100%; overflow: hidden; background: #1c130d; }
+      canvas#atlas { cursor: none; position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+      /* The only on-screen text allowed: a plain fading hint. No panels, no buttons. */
+      #hint {
+        position: fixed; left: 0; right: 0; bottom: 4.5vh; text-align: center;
+        font: 500 13px/1 Georgia, 'Times New Roman', serif; letter-spacing: 0.14em;
+        color: rgba(255, 240, 214, 0.78); text-shadow: 0 1px 6px rgba(20, 10, 0, 0.55);
+        pointer-events: none; user-select: none; opacity: 0; transition: opacity 1.4s ease;
+      }
+      #hint.on { opacity: 1; }
+      #boot {
+        position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+        background: #1c130d; color: rgba(255, 240, 214, 0.85);
+        font: 500 14px/1.7 Georgia, 'Times New Roman', serif; letter-spacing: 0.12em; text-align: center;
+      }
+      #boot.off { display: none; }
+    </style>
+  </head>
+  <body>
+    <canvas id="atlas" tabindex="0"></canvas>
+    <div id="hint">WASD / click to walk &nbsp;·&nbsp; Shift run &nbsp;·&nbsp; Ctrl slow &nbsp;·&nbsp; Tab map &nbsp;·&nbsp; N night &nbsp;·&nbsp; M music &nbsp;·&nbsp; V view</div>
+    <div id="boot">PAPERTRAILS<br />正 在 翻 开 纸 页 …<br /><small id="boot-err"></small></div>
+    <script src="./assets-data.js"></script>
+    <script src="./game.js"></script>
+    <script>
+      // Boot guard: game.js flips window.__PAPERTRAILS_STARTED__ (src/main.js) when the first frame
+      // is live. If it never happens, tell the user how to get a working HTTP entry instead.
+      window.setTimeout(function () {
+        if (!window.__PAPERTRAILS_STARTED__) {
+          var boot = document.getElementById('boot');
+          if (boot) boot.classList.remove('off');
+          var el = document.getElementById('boot-err');
+          if (el && !el.textContent) el.textContent = '入口加载失败:请改用 HTTP 方式 —— 在站点目录运行 npm install && npm run build && python3 -m http.server 8080 --directory dist';
+        }
+      }, 12000);
+    </script>
+  </body>
+</html>

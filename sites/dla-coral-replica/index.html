@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>珊瑚花园 · DLA 生长实验室 — 题材复刻</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<!-- 左上标题卡 -->
+<div id="card-title" class="card">
+  <div class="t1">珊瑚花园&ensp;·&ensp;DLA 生长实验室</div>
+  <div class="t2">题材复刻自 ekimroyrp/260716_DLACoral(MIT)——扩散限制聚集算法长出三维珊瑚,
+  <b>出生序渐变</b>上色:深处绯红、梢头莹白</div>
+  <div class="t3">拖动旋转 · 滚轮缩放 · 空格暂停 · R 重生长 · H 收起面板 · 时间轴可回放生长</div>
+</div>
+
+<!-- 左下统计 -->
+<div id="stats" class="card">
+  <div class="row"><span class="k">粒子</span><b id="st-count">0</b></div>
+  <div class="row"><span class="k">生长</span><b id="st-rate">0 粒/秒</b></div>
+  <div class="row"><span class="k">半径</span><b id="st-radius">0</b></div>
+  <div class="row"><span class="k">FPS</span><b id="st-fps">0</b></div>
+</div>
+
+<!-- 右侧控制面板 -->
+<div id="panel" class="card">
+  <div class="panel-head">
+    <span class="ph-title">生长实验室</span>
+    <button id="panel-toggle" title="收起/展开(H)">⟨</button>
+  </div>
+  <div class="groups">
+
+    <div class="group">
+      <div class="group-head">预设</div>
+      <div class="group-body presets">
+        <button data-preset="crimson" class="active">绯红珊瑚</button>
+        <button data-preset="golden">深海金穗</button>
+        <button data-preset="ice">冰晶簇</button>
+        <button data-preset="atoll">环礁花园</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head">模拟</div>
+      <div class="group-body">
+        <div class="btnrow"><button id="btn-run">⏸ 暂停</button><button id="btn-reset">↻ 重新生长</button><button id="btn-shot">📷 PNG</button></div>
+        <label class="row"><span class="k">生长速度</span><input id="growthRate" type="range" min="5" max="300" step="5"><b class="v" id="growthRate-v"></b></label>
+        <label class="row"><span class="k">目标粒子</span><input id="target" type="range" min="2000" max="60000" step="500"><b class="v" id="target-v"></b></label>
+        <label class="row"><span class="k">行走者</span><input id="walkers" type="range" min="128" max="8192" step="64"><b class="v" id="walkers-v"></b></label>
+        <label class="row"><span class="k">发射余量</span><input id="launchPad" type="range" min="1" max="30" step="1"><b class="v" id="launchPad-v"></b></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head">种子与粘附</div>
+      <div class="group-body">
+        <div class="btnrow"><span class="k inline">种子</span><input id="seed" type="number" step="1" min="1"><button id="seed-rand">🎲 随机</button></div>
+        <label class="row"><span class="k">种子形状</span>
+          <select id="shape" class="sel">
+            <option value="point">点</option>
+            <option value="sphere">球壳</option>
+            <option value="ring">平环</option>
+          </select></label>
+        <label class="row"><span class="k">种子半径</span><input id="seedRadius" type="range" min="1" max="16" step="1"><b class="v" id="seedRadius-v"></b></label>
+        <label class="row"><span class="k">粘附邻域</span>
+          <select id="neighborhood" class="sel">
+            <option value="faces6">6 面</option>
+            <option value="facesEdges18">18 面+棱</option>
+            <option value="full26">26 全邻域</option>
+            <option value="weightedFull26">26 加权</option>
+            <option value="radius2">半径 2 球</option>
+            <option value="radius3">半径 3 球</option>
+            <option value="surfaceHemisphere">外向半球</option>
+            <option value="randomized">随机半邻域</option>
+          </select></label>
+        <label class="row"><span class="k">粘附阈值</span><input id="threshold" type="range" min="1" max="6" step="1"><b class="v" id="threshold-v"></b></label>
+        <label class="row"><span class="k">粘附概率</span><input id="stickChance" type="range" min="0.05" max="1" step="0.05"><b class="v" id="stickChance-v"></b></label>
+        <label class="row"><span class="k">引导粒子</span><input id="bootstrap" type="range" min="0" max="400" step="10"><b class="v" id="bootstrap-v"></b></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head">珊瑚外观</div>
+      <div class="group-body">
+        <div class="btnrow">
+          <span class="k inline">内色</span><input id="innerColor" type="color">
+          <span class="k inline">外色</span><input id="outerColor" type="color">
+        </div>
+        <label class="row"><span class="k">渐变对比</span><input id="gradContrast" type="range" min="0.5" max="3" step="0.01"><b class="v" id="gradContrast-v"></b></label>
+        <label class="row"><span class="k">渐变偏置</span><input id="gradBias" type="range" min="-1" max="1" step="0.01"><b class="v" id="gradBias-v"></b></label>
+        <label class="row"><span class="k">渐变过渡</span><input id="gradBlur" type="range" min="0" max="1.5" step="0.05"><b class="v" id="gradBlur-v"></b></label>
+        <label class="row"><span class="k">粒子大小</span><input id="size" type="range" min="0.5" max="2" step="0.05"><b class="v" id="size-v"></b></label>
+        <label class="row"><span class="k">粒子间隙</span><input id="gap" type="range" min="0" max="0.6" step="0.02"><b class="v" id="gap-v"></b></label>
+        <label class="row"><span class="k">隐藏内部粒子</span><input id="hideEnclosed" type="checkbox" checked><b class="v"></b></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head">影棚灯光</div>
+      <div class="group-body">
+        <label class="row"><span class="k">主光</span><input id="keyB" type="range" min="0.3" max="2.5" step="0.05"><b class="v" id="keyB-v"></b></label>
+        <label class="row"><span class="k">环境填充</span><input id="ambient" type="range" min="0.2" max="2" step="0.05"><b class="v" id="ambient-v"></b></label>
+        <label class="row"><span class="k">轮廓光</span><input id="rim" type="range" min="0.2" max="2" step="0.05"><b class="v" id="rim-v"></b></label>
+        <label class="row"><span class="k">底部反光</span><input id="bounce" type="range" min="0" max="2" step="0.05"><b class="v" id="bounce-v"></b></label>
+        <label class="row"><span class="k">阴影强度</span><input id="shadow" type="range" min="0.2" max="2" step="0.05"><b class="v" id="shadow-v"></b></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-head">后处理</div>
+      <div class="group-body">
+        <label class="row"><span class="k">泛光强度</span><input id="bloom" type="range" min="0" max="1" step="0.01"><b class="v" id="bloom-v"></b></label>
+        <label class="row"><span class="k">泛光阈值</span><input id="bloomTh" type="range" min="0.1" max="1.2" step="0.01"><b class="v" id="bloomTh-v"></b></label>
+        <label class="row"><span class="k">曝光</span><input id="exposure" type="range" min="0.3" max="1.5" step="0.01"><b class="v" id="exposure-v"></b></label>
+        <label class="row"><span class="k">画面对比</span><input id="dContrast" type="range" min="0.8" max="2" step="0.01"><b class="v" id="dContrast-v"></b></label>
+        <label class="row"><span class="k">亮度</span><input id="brightness" type="range" min="0.8" max="1.3" step="0.01"><b class="v" id="brightness-v"></b></label>
+        <label class="row"><span class="k">闲置自动环绕</span><input id="autoRotate" type="checkbox" checked><b class="v"></b></label>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 底部时间线 -->
+<div id="timeline-bar" class="card">
+  <button id="btn-replay" title="回放生长过程">⟲ 回放</button>
+  <input id="timeline" type="range" min="0" max="100" value="0" step="1">
+  <span id="timeline-v">跟随生长</span>
+  <button id="btn-follow" class="hidden">跟随生长 ⟳</button>
+</div>
+
+<!-- 加载层 -->
+<div id="loader">
+  <div class="ld-box">
+    <div class="ld-t">珊瑚花园</div>
+    <div class="ld-s">DLA 种子萌发中……</div>
+    <div class="ld-bar"><div id="loader-fill"></div></div>
+  </div>
+</div>
+
+<!-- 自检结果(?selftest=1) -->
+<div id="selftest" class="card hidden"></div>
+
+<!-- 启动失败横幅 -->
+<div id="boot-fail" class="hidden">
+  <b>启动失败</b> —— 请改用本地 HTTP 打开:
+  <code>python3 tools/serve.py 8317</code> 后访问 <code>http://127.0.0.1:8317</code>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="src/rng.js"></script>
+<script src="src/sim.js"></script>
+<script src="src/render.js"></script>
+<script src="src/controls.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

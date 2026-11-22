@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>巨石阵 · 夏至密码 — Stonehenge Solstice Alignment</title>
+<meta name="description" content="移动太阳,亲眼看夏至第一缕阳光如何从脚跟石顶端沿中轴照进四千年前的石圈。题材复刻自 MeltTheManual/stonehenge-solstice。">
+<style>
+:root {
+  --gold: #e8d9a8;
+  --gold-dim: #b8a878;
+  --ink: #f0ede4;
+  --panel: rgba(14, 16, 20, 0.72);
+  --panel-line: rgba(232, 217, 168, 0.22);
+  --serif: "Songti SC", "Noto Serif SC", "STSong", serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #0b0e14; }
+body { font-family: var(--serif); color: var(--ink); -webkit-user-select: none; user-select: none; }
+canvas.gl { position: fixed; inset: 0; display: block; touch-action: none; }
+
+/* ---------- 致命错误横幅 ---------- */
+#fatal {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 99;
+  background: #5e1f1f; color: #ffe2e2; padding: 12px 16px;
+  font-size: 14px; line-height: 1.6; display: none; white-space: pre-wrap;
+}
+
+/* ---------- 开始卡 ---------- */
+#start {
+  position: fixed; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(10, 12, 18, 0.30) 0%, rgba(10, 12, 18, 0.78) 78%),
+    linear-gradient(180deg, rgba(8, 9, 14, 0.5), rgba(8, 9, 14, 0.82));
+  transition: opacity 0.7s ease;
+}
+#start.hide { opacity: 0; pointer-events: none; }
+.start-inner {
+  max-width: 560px; width: calc(100% - 48px); text-align: center;
+  padding: 44px 40px 36px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+.start-inner h1 {
+  font-size: 44px; font-weight: 600; letter-spacing: 0.12em;
+  color: var(--gold); text-shadow: 0 2px 24px rgba(232, 217, 168, 0.25);
+}
+.start-sub {
+  margin-top: 10px; font-size: 12px; letter-spacing: 0.34em;
+  color: var(--gold-dim); text-transform: uppercase;
+}
+.start-rule { width: 72px; height: 1px; background: var(--panel-line); margin: 22px auto; }
+.start-desc { font-size: 15px; line-height: 1.95; color: #d9d4c6; text-align: justify; }
+.start-desc b { color: var(--gold); font-weight: 600; }
+.start-credit { margin-top: 18px; font-size: 12px; color: #9a958a; line-height: 1.8; }
+.start-credit a { color: var(--gold-dim); text-decoration: none; border-bottom: 1px dotted var(--gold-dim); }
+.start-actions { margin-top: 26px; display: flex; gap: 14px; justify-content: center; }
+.btn {
+  font-family: var(--serif); cursor: pointer; border-radius: 8px;
+  padding: 11px 26px; font-size: 15px; letter-spacing: 0.1em;
+  border: 1px solid var(--panel-line); background: transparent; color: var(--ink);
+  transition: all 0.25s;
+}
+.btn.primary { background: linear-gradient(180deg, #caa95e, #a8873f); border-color: #e5c877; color: #17130a; font-weight: 700; }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+.btn.primary:hover { color: #17130a; }
+
+/* ---------- HUD ---------- */
+#hud { position: fixed; inset: 0; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 0.8s; }
+#hud.show { opacity: 1; }
+#hud > * { pointer-events: auto; }
+
+#title { position: absolute; top: 16px; left: 18px; text-shadow: 0 1px 8px rgba(0,0,0,0.7); }
+#title h2 { font-size: 21px; font-weight: 600; color: var(--gold); letter-spacing: 0.1em; }
+#title span { font-size: 10px; letter-spacing: 0.28em; color: rgba(232,217,168,0.55); }
+
+/* 信息卡 */
+#card-panel {
+  position: absolute; top: 76px; left: 18px; width: 316px;
+  background: var(--panel); border: 1px solid var(--panel-line);
+  border-radius: 12px; backdrop-filter: blur(8px);
+  padding: 14px 16px 12px;
+  transform: translateX(-108%); transition: transform 0.45s ease;
+}
+#card-panel.open { transform: translateX(0); }
+#card-panel .cp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+#card-panel .cp-head em { font-style: normal; font-size: 11px; letter-spacing: 0.3em; color: var(--gold-dim); }
+#card-toggle {
+  background: none; border: none; color: var(--gold-dim); cursor: pointer; font-size: 15px;
+  font-family: var(--serif); padding: 2px 6px;
+}
+#card-title { font-size: 16.5px; color: var(--gold); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.04em; }
+#card-text { font-size: 12.8px; line-height: 1.85; color: #ddd8cb; text-align: justify; max-height: 30vh; overflow-y: auto; }
+.cp-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; }
+#card-prev, #card-next {
+  background: none; border: 1px solid var(--panel-line); color: var(--ink);
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1;
+}
+#card-prev:hover, #card-next:hover { border-color: var(--gold-dim); color: var(--gold); }
+#card-dots { display: flex; gap: 6px; }
+#card-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.22); cursor: pointer; }
+#card-dots .dot.on { background: var(--gold); }
+
+/* 右上:罗盘与读数 */
+#topright {
+  position: absolute; top: 16px; right: 18px; text-align: center;
+  background: var(--panel); border: 1px solid var(--panel-line); border-radius: 12px;
+  padding: 10px 12px 8px; backdrop-filter: blur(8px);
+}
+#compass-canvas { width: 96px; height: 96px; display: block; }
+#view-info { font-size: 11px; color: #cbc6b8; margin-top: 6px; letter-spacing: 0.03em; white-space: nowrap; }
+
+/* 底部控制条 */
+#bottom {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  width: min(620px, calc(100vw - 320px));
+  background: var(--panel); border: 1px solid var(--panel-line); border-radius: 14px;
+  padding: 12px 18px 10px; backdrop-filter: blur(10px);
+}
+.ctl-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ctl-row:last-child { margin-bottom: 2px; }
+.ctl-label { font-size: 12px; color: var(--gold-dim); width: 44px; flex: none; letter-spacing: 0.12em; }
+.ctl-value { font-size: 13px; color: var(--ink); width: 88px; flex: none; text-align: right; white-space: nowrap; }
+.chips { display: flex; gap: 6px; flex: none; }
+.chip {
+  font-family: var(--serif); font-size: 12px; cursor: pointer;
+  border: 1px solid var(--panel-line); border-radius: 20px;
+  padding: 3px 12px; background: rgba(14, 16, 20, 0.55); color: #d8d3c5;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s; letter-spacing: 0.06em;
+}
+.chip:hover { border-color: var(--gold-dim); color: var(--gold); }
+.chip.on { background: rgba(232, 217, 168, 0.16); border-color: var(--gold-dim); color: var(--gold); }
+input[type="range"] { flex: 1; -webkit-appearance: none; height: 22px; background: transparent; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px; background: linear-gradient(90deg, rgba(232,217,168,0.15), rgba(232,217,168,0.45));
+  border-radius: 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe9b0, #c9a861);
+  border: 1px solid #ffe9b0; margin-top: -6px;
+  box-shadow: 0 0 10px rgba(232, 217, 168, 0.5);
+}
+input[type="range"]::-moz-range-track { height: 3px; background: rgba(232,217,168,0.3); border-radius: 2px; }
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%; background: #e8d9a8; border: 1px solid #ffe9b0;
+}
+#sun-info { font-size: 11px; color: #a9a494; text-align: center; letter-spacing: 0.06em; margin-top: 2px; }
+
+/* 右下:预设与开关 */
+#side-ctl {
+  position: absolute; right: 18px; bottom: 18px;
+  display: flex; flex-direction: column; gap: 8px; align-items: stretch;
+}
+#presets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#toggles { display: flex; gap: 6px; justify-content: flex-end; }
+
+/* 左下提示 */
+#foot {
+  position: absolute; left: 18px; bottom: 18px; font-size: 11px;
+  color: rgba(220, 214, 198, 0.55); letter-spacing: 0.04em; max-width: 300px; line-height: 1.7;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+}
+
+/* ---------- 帮助 ---------- */
+#help {
+  position: fixed; inset: 0; z-index: 50; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(6, 8, 12, 0.72); backdrop-filter: blur(6px);
+}
+#help.show { display: flex; }
+.help-inner {
+  max-width: 480px; width: calc(100% - 48px);
+  background: var(--panel); border: 1px solid var(--panel-line); border-radius: 14px;
+  padding: 30px 34px;
+}
+.help-inner h3 { color: var(--gold); font-size: 20px; margin-bottom: 14px; letter-spacing: 0.1em; }
+.help-inner p { font-size: 13px; line-height: 1.9; color: #d9d4c6; margin-bottom: 10px; text-align: justify; }
+.help-inner a { color: var(--gold-dim); text-decoration: none; border-bottom: 1px dotted var(--gold-dim); }
+
+@media (max-width: 860px) {
+  #card-panel { width: 272px; top: 70px; }
+  #bottom { width: calc(100vw - 20px); bottom: 10px; left: 10px; transform: none; }
+  #side-ctl { right: 10px; bottom: 190px; }
+  #foot { display: none; }
+  #topright { transform: scale(0.85); transform-origin: top right; }
+  .start-inner h1 { font-size: 34px; }
+  .chips { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+<div id="fatal"></div>
+
+<div id="start">
+  <div class="start-inner">
+    <h1>巨石阵 · 夏至密码</h1>
+    <div class="start-sub">Stonehenge · Solstice Alignment</div>
+    <div class="start-rule"></div>
+    <p class="start-desc">
+      站在四千年前的石阵圆心,沿中轴望向东北——<b>夏至的第一缕阳光,恰好从脚跟石顶端跃出</b>。
+      拖动日期与时刻,移动太阳:看影子旋转、看白昼变长、看冬至的太阳落向相反的方向。
+      这座巨石建筑为什么指向那道日出?在这里自己找答案。
+    </p>
+    <p class="start-credit">
+      题材复刻自开源项目 <a href="https://github.com/MeltTheManual/stonehenge-solstice" target="_blank" rel="noopener">MeltTheManual/stonehenge-solstice</a> · Three.js 重建<br>
+      全程序化生成 · 零构建 · 支持双击打开
+    </p>
+    <div class="start-actions">
+      <button class="btn primary" id="btn-enter">进 入 石 圈</button>
+      <button class="btn" id="btn-help-start">操作说明</button>
+    </div>
+  </div>
+</div>
+
+<div id="hud">
+  <div id="title">
+    <h2>巨石阵 · 夏至密码</h2>
+    <span>SOLSTICE ALIGNMENT · 51.18°N</span>
+  </div>
+
+  <div id="card-panel" class="open">
+    <div class="cp-head">
+      <em>解 读</em>
+      <button id="card-toggle" title="收起/展开">‹ ›</button>
+    </div>
+    <div id="card-title"></div>
+    <div id="card-text"></div>
+    <div class="cp-nav">
+      <button id="card-prev">‹</button>
+      <div id="card-dots"></div>
+      <button id="card-next">›</button>
+    </div>
+  </div>
+
+  <div id="topright">
+    <canvas id="compass-canvas" width="192" height="192"></canvas>
+    <div id="view-info">--</div>
+  </div>
+
+  <div id="bottom">
+    <div class="ctl-row">
+      <span class="ctl-label">日期</span>
+      <div class="chips" id="chips-date">
+        <button class="chip" data-doy="172">夏至</button>
+        <button class="chip" data-doy="355">冬至</button>
+        <button class="chip" data-doy="80">春分</button>
+        <button class="chip" data-doy="266">秋分</button>
+      </div>
+      <input type="range" id="date-slider" min="1" max="365" step="1" value="172">
+      <span class="ctl-value" id="date-label">6月21日</span>
+    </div>
+    <div class="ctl-row">
+      <span class="ctl-label">时刻</span>
+      <div class="chips" id="chips-time">
+        <button class="chip" data-k="rise">日出</button>
+        <button class="chip" data-k="noon">正午</button>
+        <button class="chip" data-k="set">日落</button>
+      </div>
+      <input type="range" id="time-slider" min="0" max="24" step="0.02" value="3.7">
+      <span class="ctl-value" id="time-label">--:--</span>
+    </div>
+    <div id="sun-info">日出 --:-- · 日落 --:-- · 当地太阳时</div>
+  </div>
+
+  <div id="side-ctl">
+    <div id="toggles">
+      <button class="chip" id="btn-overlay">方位刻度</button>
+      <button class="chip" id="btn-sound">声音关</button>
+      <button class="chip" id="btn-help">帮助 ?</button>
+    </div>
+    <div id="presets">
+      <button class="chip" data-p="avenue">大道全景</button>
+      <button class="chip" data-p="solstice">夏至日出</button>
+      <button class="chip" data-p="winter">冬至日落</button>
+      <button class="chip" data-p="inside">圆心之内</button>
+      <button class="chip" data-p="trilithon">三石塔</button>
+      <button class="chip" data-p="aerial">俯瞰</button>
+    </div>
+  </div>
+
+  <div id="foot"></div>
+</div>
+
+<div id="help">
+  <div class="help-inner">
+    <h3>操作说明</h3>
+    <p><b>移动太阳:</b>拖动底部「日期」与「时刻」滑块,或点快捷档(夏至 / 冬至 / 日出 / 正午 / 日落)。时间为当地太阳时——正午 12:00 太阳恰在正南。</p>
+    <p><b>观察:</b>按住拖动旋转视角,滚轮(或双指)缩放;右下角有六个预设机位——「夏至日出」会自动把日期调到夏至、时刻调到日出,并飞到圆心沿中轴看向脚跟石的位置。</p>
+    <p><b>解读:</b>点石阵里的任何一块石头,左侧会打开对应的讲解卡;「方位刻度」开关会在地面叠加方位环、中轴线和太阳方位射线。</p>
+    <p>题材复刻自开源项目 <a href="https://github.com/MeltTheManual/stonehenge-solstice" target="_blank" rel="noopener">MeltTheManual/stonehenge-solstice</a>(原作为单文件 three.js 演示:移动太阳、观察夏至对齐)。本站场景、物理与 UI 为原创重写,three.js r149 本地内置,零构建、可双击打开。</p>
+    <div class="start-actions" style="margin-top:18px">
+      <button class="btn primary" id="help-close">知道了</button>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="src/util.js"></script>
+<script src="src/solar.js"></script>
+<script src="src/stones.js"></script>
+<script src="src/environment.js"></script>
+<script src="src/camera.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

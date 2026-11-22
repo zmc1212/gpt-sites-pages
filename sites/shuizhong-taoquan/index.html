@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>水中套圈 — Water Ring Toss 题材复刻</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div id="stage"></div>
+<div id="vignette"></div>
+
+<!-- 左上标题卡 -->
+<div id="card-title" class="card">
+  <div class="t1">水中套圈<span class="en">WATER RING TOSS</span></div>
+  <div class="t2">题材复刻自 franky-adl/water-ring-toss-game(MIT)——经典手持水动机玩具:
+    透明水腔里彩色圆环缓缓下沉,按压<b>左右按钮</b>从底部喷口激起水流,
+    把圆环抛起、翻滚、套上两根立柱。6 环全部入柱即通关。</div>
+  <div class="t3">点按玩具上的红 / 蓝按钮 · A / ← 左喷流 · D / → 右喷流 · 拖动转视角 · 滚轮缩放</div>
+</div>
+
+<!-- 右上计分与控制 -->
+<div id="hud-top" class="card">
+  <div class="score">
+    <span class="k">已套</span><b id="score-val">0/6</b>
+    <span id="score-bar"><span id="score-fill"></span></span>
+  </div>
+  <div class="row">
+    <button id="btn-reset" class="btn">⟲ 重置<span class="key">R</span></button>
+    <button id="btn-sound" class="btn">♪ 声音关<span class="key">S</span></button>
+    <button id="btn-help" class="btn">? 帮助<span class="key">H</span></button>
+  </div>
+</div>
+
+<!-- 底部移动端喷流按钮 -->
+<div id="hud-jets">
+  <button id="hud-btn-l" class="jet-btn left">◀ 左喷流</button>
+  <button id="hud-btn-r" class="jet-btn right">右喷流 ▶</button>
+</div>
+
+<!-- 帮助面板 -->
+<div id="help-overlay" class="hidden">
+  <div id="help-panel">
+    <h2>经典水动机 — 环为何自己会沉?</h2>
+    <p>真实的水中套圈玩具是一只密封的手持水腔,里面灌满水、漂着几只比水略重的塑料圆环。
+       圆环静止时<b>缓缓下沉</b>,堆在腔底;按下侧面的按钮,底部喷口喷出一股水流,
+       把圆环抛向空中——在翻滚中恰好以<b>水平姿态</b>落到立柱顶上,便会顺着柱身滑落套住。</p>
+    <h3>本站的模拟方式</h3>
+    <p>六只圆环是刚体:位置 + 姿态 + 角速度逐帧积分,水阻与微沉浮力、喷流冲量场、
+       圆环间球体近似碰撞都在 CPU 上计算;腔壁碰撞用圆角矩形容器的<b>支撑函数</b>求环的
+       各向异性投影,平放的环贴壁、竖立的环也贴壁,不穿模。</p>
+    <p>环接近柱顶且近水平时,水流会有轻微的<b>导流辅助</b>(对中 + 回正力矩);
+       但手太猛会累积应力——柱顶的环可能被顶飞。稳一点,轻点慢压才是真实玩具的手感。</p>
+    <h3>操作</h3>
+    <table id="help-table">
+      <tr><td>点按玩具上红 / 蓝按钮</td><td>左 / 右喷口喷出水流(按住连发)</td></tr>
+      <tr><td>A / ←  ·  D / →</td><td>键盘触发左 / 右喷流</td></tr>
+      <tr><td>底部 ◀ ▶ 按钮</td><td>移动端喷流按钮</td></tr>
+      <tr><td>拖动 / 滚轮 / 双指</td><td>旋转视角 / 缩放</td></tr>
+      <tr><td>⟲ 重置(R)</td><td>把圆环撒回水中重新开始</td></tr>
+      <tr><td>♪ 声音(S)</td><td>喷水、落柱与通关音效</td></tr>
+      <tr><td>H / Esc</td><td>打开 / 关闭本帮助</td></tr>
+    </table>
+    <button id="help-close" class="btn">关闭(Esc)</button>
+    <div id="help-credit">题材复刻自 threejs.cc 开源专题收录的 franky-adl/water-ring-toss-game(MIT);
+      本站为其原创简化实现,未复制上游源码与美术资产,全部几何与贴图程序化生成。
+      原作:https://github.com/franky-adl/water-ring-toss-game</div>
+  </div>
+</div>
+
+<!-- 通关横幅 -->
+<div id="win-overlay" class="hidden">
+  <div id="win-card">
+    <div class="w1">🎉 六环全部入柱!</div>
+    <div class="w2">真实玩具要练一下午的手感,你做到了。</div>
+    <button id="win-btn">再来一局(R)</button>
+  </div>
+</div>
+
+<!-- 开始遮罩 -->
+<div id="start-overlay">
+  <div id="start-card">
+    <h1>水中套圈</h1>
+    <div class="sub">WATER RING TOSS · 手持水动机玩具</div>
+    <p>一只 1960 年代的手持水动机玩具:透明水腔、两根立柱、六只彩色圆环。
+       圆环缓缓下沉,按<b>左右按钮</b>喷水把环抛起——让它们翻着跟头<b>套上立柱</b>。</p>
+    <p>轻点慢压才有手感;手太猛,套好的环也会被顶飞。</p>
+    <label class="start-opt"><input type="checkbox" id="opt-sound" checked> 开启音效(音量很低,S 可静音)</label>
+    <br>
+    <button id="start-btn">开 始</button>
+    <div id="start-credit">题材复刻 · franky-adl/water-ring-toss-game(MIT)· 原创简化实现<br>
+      three.js r149 · 零构建 · file:// 双击可用</div>
+  </div>
+</div>
+
+<!-- 致命错误横幅(脚本失败时由 JS 填充显示) -->
+<div id="fatal" class="hidden"></div>
+
+<div class="corner left">GPT-SITES · 题材复刻系列</div>
+<div class="corner right">WATER RING TOSS REPLICA · MIT</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="src/toy.js"></script>
+<script src="src/water.js"></script>
+<script src="src/physics.js"></script>
+<script src="src/scene.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

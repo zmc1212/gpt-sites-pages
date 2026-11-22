@@ -1,0 +1,288 @@
+/* ERNSTMANN RF-35 — 米色图纸风外观 */
+:root {
+  --paper: #E6DFD0;
+  --paper-lit: #EFE9DB;
+  --ink: #26241F;
+  --ink-soft: #6E6858;
+  --chrome: #C9CCD1;
+  --leather: #1A1A1C;
+  --orange: #C75B39;
+  --panel: #211F1A;
+  --panel-line: rgba(230, 223, 208, 0.8);
+  --green: #6d8a5f;
+  --blue: #5b7ea6;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: var(--mono);
+  background: radial-gradient(120% 130% at 20% 0%, #34302a 0%, #26231d 45%, #191712 100%);
+  overflow: hidden;
+  color: var(--ink);
+}
+
+#sheet {
+  position: absolute;
+  inset: 16px;
+  border-radius: 20px;
+  background: var(--paper);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+}
+#stage { position: absolute; inset: 0; }
+#stage canvas { display: block; }
+
+#frame-dashed {
+  position: absolute;
+  inset: 12px;
+  border: 1.5px dashed rgba(199, 91, 57, 0.65);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.card {
+  position: absolute;
+  z-index: 6;
+  background: var(--paper-lit);
+  border: 1px solid rgba(38, 36, 31, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(30, 24, 8, 0.2);
+  pointer-events: none;
+}
+#card-title {
+  top: 26px; left: 28px;
+  padding: 10px 14px 9px;
+  max-width: 490px;
+}
+#card-title .t1 { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; }
+#card-title .t2 { font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; }
+#card-title .t3 { font-size: 10px; color: #a29c8b; margin-top: 3px; }
+
+#card-status {
+  top: 26px; right: 28px;
+  width: 172px;
+  padding: 10px 14px 11px;
+}
+#card-status .k { font-size: 9.5px; color: var(--ink-soft); letter-spacing: 0.12em; }
+#card-status .mode {
+  font-size: 21px; font-weight: 800; letter-spacing: 0.05em;
+  margin: 1px 0 6px; min-height: 24px;
+}
+#card-status .mode.hot { color: var(--orange); }
+#card-status .row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; margin-top: 2px;
+}
+#card-status .row b { font-size: 11.5px; }
+
+#phase-pill {
+  position: absolute;
+  left: 50%; bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--leather);
+  color: #EFE9DB;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(10, 8, 4, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+}
+#phase-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 6px currentColor;
+}
+#phase-dot.orange { background: var(--orange); }
+#phase-dot.green { background: var(--green); }
+#phase-dot.blue { background: var(--blue); }
+#phase-dot.silver { background: var(--chrome); }
+
+.corner {
+  position: absolute;
+  bottom: 20px;
+  z-index: 6;
+  font-size: 9.5px; letter-spacing: 0.14em;
+  color: rgba(38, 36, 31, 0.75);
+  background: rgba(239, 233, 219, 0.8);
+  padding: 3px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+#corner-left { left: 24px; }
+#corner-right { right: 24px; }
+
+/* ---------- 底部仪表盘 ---------- */
+#dash {
+  position: absolute;
+  left: 22px; right: 22px; bottom: 44px;
+  z-index: 5;
+  display: flex;
+  gap: 10px;
+  pointer-events: none;
+}
+.panel {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--panel);
+  border: 1.5px solid var(--panel-line);
+  border-radius: 12px;
+  color: #E8E2D2;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(8, 6, 2, 0.45);
+}
+.panel header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px 5px;
+  border-bottom: 1px solid rgba(230, 223, 208, 0.14);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em;
+}
+.panel header .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.panel header .meta { margin-left: auto; font-weight: 400; font-size: 8.5px; color: rgba(232, 226, 210, 0.55); letter-spacing: 0.08em; }
+.panel .body { padding: 7px 10px 8px; }
+
+.dot.orange { background: var(--orange); }
+.dot.silver { background: var(--chrome); }
+.dot.green { background: var(--green); }
+.dot.blue { background: var(--blue); }
+
+/* 曝光三角 */
+.xrow {
+  display: flex; align-items: center; gap: 8px;
+  margin: 5px 0 2px;
+}
+.xrow .k { width: 66px; font-size: 8.5px; color: rgba(232,226,210,.65); letter-spacing: .1em; flex: none; }
+.xrow .k sm { font-size: 7px; opacity: .7; }
+.xrow .v { width: 62px; font-size: 16px; font-weight: 800; line-height: 1; flex: none; }
+.strip {
+  flex: 1; height: 6px; position: relative;
+  background: rgba(232,226,210,.12);
+  border-radius: 3px;
+}
+.strip i {
+  position: absolute; top: -2.5px; left: 0;
+  width: 2.5px; height: 11px;
+  background: var(--orange);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: left .3s;
+}
+.xfine { font-size: 7.5px; color: rgba(232,226,210,.4); letter-spacing: .08em; margin-top: 5px; }
+
+/* 测光表 */
+.mwrap { display: flex; gap: 8px; align-items: flex-end; }
+#c-meter { width: 92px; height: 56px; display: block; flex: none; }
+.mrows { flex: 1; display: flex; flex-direction: column; gap: 3px; font-size: 8.5px; }
+.mrows .r { display: flex; justify-content: space-between; color: rgba(232,226,210,.7); }
+.mrows .r b { color: #EFE9DB; }
+
+.chip {
+  font-size: 7.5px; letter-spacing: .1em; padding: 1.5px 6px;
+  border: 1px solid rgba(232,226,210,.3); border-radius: 4px; color: rgba(232,226,210,.6);
+  align-self: flex-start; margin-top: 3px;
+}
+.chip.on { border-color: var(--green); color: #9dc48c; }
+.chip.hot { border-color: var(--orange); color: var(--orange); }
+
+/* 光圈叶片 */
+.iwrap { display: flex; gap: 9px; align-items: center; }
+#c-iris { width: 72px; height: 72px; display: block; flex: none; }
+.iright { flex: 1; display: flex; flex-direction: column; gap: 3px; font-size: 8.5px; color: rgba(232,226,210,.65); }
+.irv { font-size: 20px; font-weight: 800; color: #EFE9DB; line-height: 1; }
+.k { font-size: 8px; letter-spacing: .1em; color: rgba(232,226,210,.55); }
+.k.dim { color: rgba(232,226,210,.35); }
+
+/* 帘幕时序 */
+#c-curtain { width: 100%; height: 58px; display: block; border-radius: 4px; }
+.ctrow { display: flex; justify-content: space-between; font-size: 8px; color: rgba(232,226,210,.6); margin-top: 3px; letter-spacing: .06em; }
+
+/* 胶卷 */
+.fwrap { display: flex; gap: 10px; align-items: center; }
+.fc-num {
+  font-size: 34px; font-weight: 800; line-height: 1;
+  min-width: 46px; text-align: center;
+  color: var(--orange);
+  background: rgba(230,223,208,.07);
+  border-radius: 8px; padding: 8px 6px;
+}
+.fright { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fc-cells { display: flex; flex-wrap: wrap; gap: 2px; }
+.fc-cells i {
+  width: 7px; height: 9px;
+  background: rgba(232,226,210,.12);
+  border-radius: 1.5px;
+}
+.fc-cells i.on { background: var(--orange); }
+.ffoot { display: flex; justify-content: space-between; align-items: center; font-size: 8px; color: rgba(232,226,210,.55); }
+.ffoot b { color: rgba(232,226,210,.85); font-size: 8.5px; }
+
+/* 黄斑双影演示卡 */
+#rf-demo {
+  position: absolute;
+  right: 28px; bottom: 208px;
+  z-index: 6;
+  background: var(--paper-lit);
+  border: 1px solid rgba(38, 36, 31, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(30, 24, 8, 0.2);
+  padding: 8px 10px 7px;
+  pointer-events: none;
+}
+#rf-demo .k { color: var(--ink-soft); margin-bottom: 5px; }
+#c-rf { width: 250px; height: 130px; display: block; border-radius: 4px; }
+.rfrow { display: flex; justify-content: space-between; align-items: baseline; font-size: 9px; margin-top: 5px; color: var(--ink-soft); }
+.rfrow b { font-size: 12px; color: var(--ink); }
+.rfrow span { color: var(--orange); font-weight: 700; letter-spacing: .06em; }
+.rfrow span.on { color: var(--green); }
+
+/* 零件标签 */
+#tags { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.tag {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--orange);
+  color: #17140a;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+  padding: 3px 8px 4px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(40, 20, 4, 0.35);
+}
+.tag .sub { display: block; font-size: 8px; font-weight: 600; opacity: 0.75; letter-spacing: 0.04em; }
+.tag.white { background: var(--paper-lit); color: var(--ink); border: 1px solid rgba(38,36,31,.3); }
+.tag::after {
+  content: "";
+  position: absolute; left: 50%; top: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--orange);
+  border-bottom: none;
+}
+.tag.white::after { border-top-color: var(--paper-lit); }
+
+/* 启动失败 */
+#boot-error {
+  position: absolute; z-index: 30;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: var(--paper-lit);
+  border: 1.5px solid rgba(199, 91, 57, 0.7);
+  border-radius: 12px;
+  padding: 18px 22px;
+  max-width: 520px;
+  font-size: 12px;
+  color: #8c3a22;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}
+#boot-error b { font-size: 14px; }
+#boot-error p { margin-top: 8px; line-height: 1.6; }
+#boot-error code { background: #e2dccb; padding: 1px 5px; border-radius: 4px; }
+
+@media (max-width: 1100px) {
+  #card-title .t3 { display: none; }
+  .panel header .meta { display: none; }
+  #rf-demo { display: none; }
+}

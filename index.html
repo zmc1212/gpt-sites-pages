@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT-SITES · 工作区总览 — 装配模拟站点合集</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --ink: #E8E4DA;
+    --ink-dim: #9A968B;
+    --paper: #1B1D21;
+    --line: #33363C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, "PingFang SC", "Microsoft YaHei", monospace;
+    padding: 34px 40px 60px;
+  }
+  #frame-dashed {
+    position: fixed; inset: 14px; pointer-events: none;
+    border: 1px dashed #4A4E56;
+  }
+  #frame-dashed::after {
+    content: ""; position: absolute; inset: 6px;
+    border: 1px solid rgba(74,78,86,0.35);
+  }
+
+  /* ---- 顶部标题卡 ---- */
+  #head { max-width: 1180px; margin: 0 auto 10px; }
+  .t1 { font-size: 26px; letter-spacing: 3px; font-weight: 700; }
+  .t1 em { font-style: normal; color: #E8A13D; }
+  .t2 { color: var(--ink-dim); font-size: 13px; margin-top: 9px; line-height: 1.7; }
+  .t2 b { color: var(--ink); font-weight: 600; }
+  .t3 { color: #6E6A60; font-size: 11px; margin-top: 6px; line-height: 1.7; }
+  .t3 code { color: #8FA3B8; background: #23262B; padding: 1px 6px; border-radius: 3px; }
+
+  /* ---- 分区标题(阶段胶囊风) ---- */
+  .section { max-width: 1180px; margin: 34px auto 12px; display: flex; align-items: center; gap: 14px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 14px; font-size: 12px; letter-spacing: 1px; color: var(--ink);
+    background: rgba(255,255,255,0.03);
+  }
+  .pill i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .pill small { color: var(--ink-dim); letter-spacing: 0; }
+  .rule { flex: 1; border-top: 1px dashed var(--line); }
+
+  /* ---- 卡片网格 ---- */
+  .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    background: #202329;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent, #888);
+    border-radius: 8px;
+    padding: 16px 18px 14px;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  a.card:hover { transform: translateY(-3px); background: #262A31; border-color: #565C66; }
+  .c1 { font-size: 15.5px; font-weight: 700; letter-spacing: 1px; color: var(--ink); line-height: 1.4; }
+  .c1 b { color: var(--accent); font-weight: 700; }
+  .brand { color: #7E8894; font-size: 10.5px; margin-top: 5px; letter-spacing: 1px; }
+  .zh { color: #C4BFB2; font-size: 12.5px; margin-top: 9px; line-height: 1.75; }
+  .zh b { color: var(--accent); font-weight: 600; }
+  .meta { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .dir { color: #6E7683; font-size: 10.5px; background: #191C21; padding: 2px 7px; border-radius: 3px; border: 1px solid #2C3037; }
+  .open { margin-left: auto; font-size: 12px; color: var(--accent); letter-spacing: 1px; }
+  a.card:hover .open { text-decoration: underline; }
+  .warn { font-size: 10px; color: #C9803A; border: 1px dashed #6E5222; padding: 2px 7px; border-radius: 3px; }
+  .rainbow { display: inline-block; width: 54px; height: 4px; border-radius: 2px; vertical-align: middle;
+    background: linear-gradient(90deg, #C7161D 0 25%, #E0B400 25% 50%, #3EB435 50% 75%, #22B0C8 75% 100%); }
+
+  /* ---- 解说视频双入口与播放浮层 ---- */
+  .watch { font-size: 10.5px; color: #E8A13D; background: rgba(232,161,61,0.08); padding: 2px 7px; border-radius: 3px; border: 1px solid rgba(232,161,61,0.35); letter-spacing: 0.5px; cursor: pointer; white-space: nowrap; }
+  .watch:hover { background: rgba(232,161,61,0.22); border-color: #E8A13D; }
+  #vmodal { position: fixed; inset: 0; z-index: 99; display: flex; align-items: center; justify-content: center; }
+  #vmodal[hidden] { display: none; }
+  .vback { position: absolute; inset: 0; background: rgba(10,11,13,0.82); }
+  .vbox { position: relative; width: min(920px, 94vw); background: #202329; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; box-shadow: 0 18px 60px rgba(0,0,0,0.55); }
+  .vhead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .vtitle { font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+  .vsub { color: var(--ink-dim); font-size: 11px; letter-spacing: 0.5px; }
+  .vclose { margin-left: auto; cursor: pointer; color: var(--ink-dim); font-size: 13px; padding: 2px 9px; border: 1px solid var(--line); border-radius: 4px; align-self: center; }
+  .vclose:hover { color: var(--ink); border-color: #565C66; }
+  .vbox video { width: 100%; aspect-ratio: 16 / 9; background: #14161A; border-radius: 6px; display: block; }
+
+  /* ---- 底部 ---- */
+  #foot { max-width: 1180px; margin: 40px auto 0; display: flex; justify-content: space-between; color: #5E5B54; font-size: 11px; letter-spacing: 1.5px; }
+  .card.disabled { opacity: 0.55; cursor: not-allowed; }
+  .card.disabled:hover { transform: none; background: #202329; border-color: var(--line); }
+</style>
+</head>
+<body>
+<div id="frame-dashed"></div>
+
+<div id="head">
+  <div class="t1">GPT-SITES&ensp;·&ensp;工作区总览&ensp;·&ensp;<em>站点合集</em></div>
+  <div class="t2">共 <b>73 个装配模拟</b> + <b>12 个场景导览</b> + <b>6 个创意动效</b> + <b>1 个纸艺探索</b> + <b>1 个海岛钓鱼</b> + <b>1 个桌面玩具</b> + <b>6 个科普可视化</b>,除 papertrails(构建产物随仓库交付)外全部零构建。装配模拟是约 45 秒自动循环的「产品视频」:
+    零件逐件飞入装配 → 调试运行,进入后<b>拖动旋转 · 滚轮缩放 · 点击零件看标签 · 空格暂停 · R 重播 · 数字键 1–8 跳阶段</b>;场景导览按章节滚动巡景。带 <b>▶ 解说</b> 角标的站点(60 个装配站)已配<b>制作解说视频</b>:点琥珀色角标直接看视频,点卡片其余位置进入站点。</div>
+  <div class="t3">发布版静态主站：<b>111</b> 个站点已打包到 <code>sites/</code> 下。构建：<code>node tools/build-pages.mjs</code>;本地预览：<code>python -m http.server 8080 --directory _site</code>。</div>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#1E9AAD"></i>经典电路板 · 装配模拟 <small>× 9</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep08-uno-draft-v2.mp4" style="--accent:#1E9AAD" href="sites/uno-r3-workbench/index.html">
+    <div class="c1">Arduino UNO R3 · <b>电路板装配</b></div>
+    <div class="brand">OPENHARD · UNO R3 · ATmega328P</div>
+    <div class="zh">开源硬件的完整生产流程:贴片回流 → 直插元件 → 芯片插装 → 连接器压装,再上电看 PWR 灯亮起、板载 LED 以 1Hz 闪烁、串口滚出字符流。43 个零件全部带<b>真实位号与参数</b>,点击可查。</div>
+    <div class="meta"><span class="dir">uno-r3-workbench/</span><span class="watch" data-ep="EP08">▶ 解说 EP08</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep05-zx-draft-v2.mp4" style="--accent:#22B0C8" href="sites/zx-spectrum-48k-board/index.html">
+    <div class="c1">ZX Spectrum 48K · <b>主板装配</b> <span class="rainbow"></span></div>
+    <div class="brand">SINCLAIR · ISSUE 3B · 1982</div>
+    <div class="zh">16 颗 RAM 芯片逐颗落板、Ferranti 定制 ULA、Z80 与 ROM 就位后,屏幕亮出 <b>© 1982 版权页</b>;按 8 进入 LOAD 阶段——标志性的彩条加载屏与磁带音频波形一起跑起来。</div>
+    <div class="meta"><span class="dir">zx-spectrum-48k-board/</span><span class="watch" data-ep="EP05">▶ 解说 EP05</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep06-c64-draft-v2.mp4" style="--accent:#7C84E8" href="sites/c64-motherboard-lab/index.html">
+    <div class="c1">Commodore 64 · <b>主板实验室</b></div>
+    <div class="brand">ASSY 250425 · 蓝图风</div>
+    <div class="zh">6510 / VIC-II / SID / PLA 芯片海逐组装配,再插上手柄与电源:CRT 逐行打出 <b>38911 BASIC BYTES FREE · READY.</b> 进入 SID 阶段后按 A–K 键可以<b>弹奏音符</b>,看三声道波形跳动。</div>
+    <div class="meta"><span class="dir">c64-motherboard-lab/</span><span class="watch" data-ep="EP06">▶ 解说 EP06</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep03-altair-draft-v2.mp4" style="--accent:#D9A036" href="sites/altair-8800/index.html">
+    <div class="c1">Altair 8800 · <b>前面板与插卡</b></div>
+    <div class="brand">MITS · S-100 BUS · 1975</div>
+    <div class="zh">个人计算机的起点:8080 装机、S-100 插卡插入、前面板拨动开关与地址灯逐一点亮,回到拨开关输程序的时代。</div>
+    <div class="meta"><span class="dir">altair-8800/</span><span class="watch" data-ep="EP03">▶ 解说 EP03</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep02-apple1-draft-v2.mp4" style="--accent:#62B57E" href="sites/apple-1/index.html">
+    <div class="c1">Apple I · <b>NTB 主板</b></div>
+    <div class="brand">6502 · WOZ MONITOR · 1976</div>
+    <div class="zh">沃兹尼亚克手焊的传奇板子:6502 与内存装配后,CRT 上跑 Woz Monitor / BASIC,一块卖 $666.66 的板子。</div>
+    <div class="meta"><span class="dir">apple-1/</span><span class="watch" data-ep="EP02">▶ 解说 EP02</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep04-ibm-draft-v2.mp4" style="--accent:#5B8DD6" href="sites/ibm-pc-5150/index.html">
+    <div class="c1">IBM PC 5150 · <b>自检与插卡</b></div>
+    <div class="brand">8088 · FIVE ISA SLOTS · 1981</div>
+    <div class="zh">个人计算机标准的确立:ISA 插卡逐块插上,上电后看 POST <b>内存计数一路滚到 64K</b>。</div>
+    <div class="meta"><span class="dir">ibm-pc-5150/</span><span class="watch" data-ep="EP04">▶ 解说 EP04</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep01-famicom-draft-v5-hd.mp4" style="--accent:#C7392B" href="sites/famicom-console/index.html">
+    <div class="c1">任天堂 Famicom · <b>红白机扣合</b></div>
+    <div class="brand">HVC-001 · 2A03 + 2C02 · 1983</div>
+    <div class="zh">红白壳机身扣合、CPU/PPU 图形表装配,六千万台红白机的内部一次看全。</div>
+    <div class="meta"><span class="dir">famicom-console/</span><span class="watch" data-ep="EP01">▶ 解说 EP01</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep07-rpi-draft-v2.mp4" style="--accent:#6CC24A" href="sites/raspberry-pi-model-b/index.html">
+    <div class="c1">Raspberry Pi Model B · <b>单板机启动</b></div>
+    <div class="brand">BCM2835 · ARM11 · 2012</div>
+    <div class="zh">信用卡大小的计算机:SoC 与 PoP 内存贴装、接口齐全后,TTY 启动日志滚动,GPIO 闪烁。</div>
+    <div class="meta"><span class="dir">raspberry-pi-model-b/</span><span class="watch" data-ep="EP07">▶ 解说 EP07</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep09-lodestar-draft-v2.mp4" style="--accent:#2FB8AC" href="sites/lodestar-sdr-workbench/index.html">
+    <div class="c1">LODESTAR LS-8 · <b>软件无线电</b></div>
+    <div class="brand">ANTHROPIC · SDR · 系列首作</div>
+    <div class="zh">本系列的开山之作:22 个零件从左侧飞入装配、线缆生长,上电调谐后完成一次<b>卫星过境的跟踪与锁定</b>,底部五块射频仪表盘全程联动。</div>
+    <div class="meta"><span class="dir">lodestar-sdr-workbench/</span><span class="watch" data-ep="EP09">▶ 解说 EP09</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#B08D57"></i>机构复刻 · 装配模拟 <small>× 7 · 运动学均按真实机构验证</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep10-escapement-draft-v2.mp4" style="--accent:#B08D57" href="sites/escapement-atelier/index.html">
+    <div class="c1">自动机械机芯 · <b>装配与走时</b></div>
+    <div class="brand">ATELIER · CAL. 2892-A</div>
+    <div class="zh">发条盒落位、齿轮系按<b>真实传动比啮合转动</b>、杠杆式擒纵 tick-tock、摆轮起摆到 ±270°(4Hz),自动锤上链后装上表盘走时——秒针每秒 8 小跳,擒纵特写小窗与 3D 同相位。</div>
+    <div class="meta"><span class="dir">escapement-atelier/</span><span class="watch" data-ep="EP10">▶ 解说 EP10</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep11-rangefinder-draft-v2.mp4" style="--accent:#C75B39" href="sites/rangefinder-35-film/index.html">
+    <div class="c1">旁轴胶片相机 · <b>装卷与曝光</b></div>
+    <div class="brand">ERNSTMANN · RF-35 TYPE III</div>
+    <div class="zh">布帘快门装入、黄斑双影<b>合一对焦</b>演示、6 片镜片逐片飞入镜筒、光圈叶片开合;装一卷 36 张的胶卷后过片,按 8 看快门 1/1000 的<b>缝隙横扫</b>。</div>
+    <div class="meta"><span class="dir">rangefinder-35-film/</span><span class="watch" data-ep="EP11">▶ 解说 EP11</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep12-v8-draft-v2.mp4" style="--accent:#E8611C" href="sites/v8-smallblock-teardown/index.html">
+    <div class="c1">V8 发动机 · <b>装配与怠速</b></div>
+    <div class="brand">IRONLINE · SB-350 · 90° SMALL-BLOCK</div>
+    <div class="zh">曲轴入座、8 组活塞连杆按<b>点火顺序 1-8-4-3-6-5-7-2</b> 依次装入,缸盖气门正时机构就位后起动:透视怠速里看活塞往复、气门开合与逐缸火花,中段还有一脚轰油。</div>
+    <div class="meta"><span class="dir">v8-smallblock-teardown/</span><span class="watch" data-ep="EP12">▶ 解说 EP12</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep13-rocket-draft-v2.mp4" style="--accent:#6FA3E8" href="sites/sonde-rocket-telemetry/index.html">
+    <div class="c1">探空火箭 · <b>总装与发射</b></div>
+    <div class="brand">AZURE RANGE · SR-290</div>
+    <div class="zh">发射架与箭体总装、T-10 倒计时后点火:相机跟随爬升、背景渐变<b>深空星野</b>,apogee 头锥分离、降落伞展开缓降回收,高度曲线/马赫数/事件灯全程遥测。</div>
+    <div class="meta"><span class="dir">sonde-rocket-telemetry/</span><span class="watch" data-ep="EP13">▶ 解说 EP13</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep14-turntable-draft-v2.mp4" style="--accent:#A98A3D" href="sites/turntable-hifi-console/index.html">
+    <div class="c1">黑胶唱机 · <b>落针放唱</b></div>
+    <div class="brand">KOLTHOFF · HP-33 · BELT DRIVE</div>
+    <div class="zh">胡桃木底座、转盘与主轴装配、皮带挂载、音臂配平,放上唱片按下启动:转速爬升到 <b>33⅓ RPM</b> 锁定、落针循迹,频谱随「器乐」起舞。</div>
+    <div class="meta"><span class="dir">turntable-hifi-console/</span><span class="watch" data-ep="EP14">▶ 解说 EP14</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep15-steam280-draft-v2.mp4" style="--accent:#C76A7A" href="sites/rod-and-boiler-28-0/index.html">
+    <div class="c1">蒸汽机车 2-8-0 · <b>连杆与升汽</b></div>
+    <div class="brand">GREAT VALLEY · CONSOL No.4750</div>
+    <div class="zh">轮对滚入、汽缸与连杆系装配后<b>手摇一圈看联动</b>(左右曲拐相差 90°);锅炉升压到 14 bar 安全阀排汽,调节阀拉开——机车在图纸上缓缓起步前行。</div>
+    <div class="meta"><span class="dir">rod-and-boiler-28-0/</span><span class="watch" data-ep="EP15">▶ 解说 EP15</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep16-orbiter-draft-v2.mp4" style="--accent:#C9A227" href="sites/orbiter-sunwing-ait/index.html">
+    <div class="c1">小卫星 · <b>总装与太阳翼展开</b></div>
+    <div class="brand">HELIODYNE · AURORA-SW · AIT BAY</div>
+    <div class="zh">洁净间转台上总装贮箱、电池、飞轮与天线,双翼<b>逐板展开测试</b>(角度计爬到 180°);按 8 进入在轨阶段——背景切深空、帆板对日定向、功率拉满 1200W。</div>
+    <div class="meta"><span class="dir">orbiter-sunwing-ait/</span><span class="watch" data-ep="EP16">▶ 解说 EP16</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#8A6E3F"></i>机构复刻 · 世界古机械 <small>× 2 · 运动学均按文献数据验算</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep57-antikythera-draft-v2.mp4" style="--accent:#B08D57" href="sites/antikythera/index.html">
+    <div class="c1">安提基特拉机械 · <b>青铜齿轮宇宙</b></div>
+    <div class="brand">GRECO-ROMAN · 约 BC 150-100 · 223T 主轮</div>
+    <div class="zh">1901 年沉船打捞的青铜齿轮天文计算器:CT 读出的齿轮全部按实测齿数复原,月轮系 64/38 × 48/24 × 127/32 = <b>254/19 严格成立</b>,销槽装置复现月行差 ε≈0.1146;背面梅顿五圈螺旋与沙罗四圈螺旋可读,拧过 19 年梅顿指针<b>恰好转满 5 圈</b>。</div>
+    <div class="meta"><span class="dir">antikythera/</span><span class="watch" data-ep="EP57">▶ 解说 EP57</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep58-archimedes-screw-draft-v2.mp4" style="--accent:#5F86A8" href="sites/archimedes-screw/index.html">
+    <div class="c1">阿基米德螺旋提水器 · <b>提水螺旋</b></div>
+    <div class="brand">HELLENISTIC · 约 BC 3 世纪 · 单螺旋</div>
+    <div class="zh">倾斜木条筒里的单螺旋叶片把水从低端逐室抬到高端:圈数 <b>N = L/P = 5.4545</b>、扬程 H = L·sin30° = 1.50 m、流量 Q = V·n 全项断言;水团确定性追踪到顶溢出回底,慢转/快转两档对比提水率。</div>
+    <div class="meta"><span class="dir">archimedes-screw/</span><span class="watch" data-ep="EP58">▶ 解说 EP58</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#C9A227"></i>机构复刻 · 计算史 <small>× 2 · 状态机数值断言</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep59-suanpan-draft-v2.mp4" style="--accent:#8C5A2B" href="sites/suanpan/index.html">
+    <div class="c1">算盘 · <b>位值状态机</b></div>
+    <div class="brand">程大位《算法统宗》1592 · 2:5 珠十三档</div>
+    <div class="zh">明制 2:5 珠十三档算盘:全盘拨珠由确定性状态机驱动,置 1234 加 5678 逐位口诀得 <b>6912</b>,999+1 连环进位得 <b>1000</b>,每步读数载入期断言,满盘十三位全 9。</div>
+    <div class="meta"><span class="dir">suanpan/</span><span class="watch" data-ep="EP59">▶ 解说 EP59</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep60-pascaline-draft-v2.mp4" style="--accent:#C9A227" href="sites/pascaline/index.html">
+    <div class="c1">帕斯卡加法器 · <b>sautoir 进位</b></div>
+    <div class="brand">BLAISE PASCAL 1642-45 · 六位十进制</div>
+    <div class="zh">巴黎工艺博物馆藏制式:输入辐条轮 36°/位,某位 9→0 时 <b>sautoir 进位杆</b>抬起落下把 +1 传左档;置 1234 输入 5678 得 6912(进位次数逐项断言),999+1 连环进位 ×3 得 1000。</div>
+    <div class="meta"><span class="dir">pascaline/</span><span class="watch" data-ep="EP60">▶ 解说 EP60</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#3D7EA6"></i>机构复刻 · 光学仪器 <small>× 2 · 光路几何与追迹断言</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#3D7EA6" href="sites/slr-camera/index.html">
+    <div class="c1">单反相机 · <b>反光镜箱与五棱镜</b></div>
+    <div class="brand">SLR · CONTAX S 1949 / ASAHIFLEX 1952 · 55mm f/1.4</div>
+    <div class="zh">剖视的 135 单反:取景与曝光共用一只镜头——<b>反光镜 45° 把光抬上对焦屏,五棱镜两次反射恒偏 90°</b>(±3° 入射追迹 ≤0.2°);按下快门翻镜让路、光圈收到 f/8、幕帘以 2.2 m/s 扫出 2.2mm 缝(X-sync 1/60 缝 36.7mm≥36 全开判据),胶片落出倒立实像;幕帘 t=w/v、f 序列 ×√2、EV 互易、近摄伸长 7.66mm 全部载入期断言。</div>
+    <div class="meta"><span class="dir">slr-camera/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8A6E3F" href="sites/mozi-pinhole/index.html">
+    <div class="c1">墨经小孔成像 · <b>景到,在午有端</b></div>
+    <div class="brand">《墨经》约 BC 4 世纪 · 暗室暗箱 · 对照 camera obscura</div>
+    <div class="zh">世界最早的小孔成像记录:隔墙一枚「端」,光「煦若射」直进——<b>足蔽下光成景于上,首蔽上光成景于下</b>,屏上浮现倒立实像(逐像素光线逆向采样实算,非贴图);像距滑动景随 b 变大,孔径 20→2mm 演出「大孔明而糊 / 小孔暗而锐」:照度 ∝d²、半影 d(a+b)/a 全程断言,行人过孔景反向。</div>
+    <div class="meta"><span class="dir">mozi-pinhole/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#88AACE"></i>场景 · 重现导览 <small>× 13</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#88AACE" href="sites/yichang-street-perspectives-v5/index.html">
+    <div class="c1">宜昌街景透视 </div>
+    <div class="brand">STREET PERSPECTIVES · V5 · 系列首个站点</div>
+    <div class="zh">宜昌街景的五幕透视场景,本工作区的起点;检出 submodule 后浏览。</div>
+    <div class="meta"><span class="dir">yichang-street-perspectives-v5/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C8A165" href="sites/persepolis-reimagined/index.html">
+    <div class="c1">波斯波利斯 · <b>台地重生</b> 
+</div>
+    <div class="brand">PERSEPOLIS REIMAGINED</div>
+    <div class="zh">古波斯王宫台地的三维重现,「重现」系列手法的源头。</div>
+    <div class="meta"><span class="dir">persepolis-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#6B9AC4" href="sites/tiantan-reimagined/index.html">
+    <div class="c1">天坛 · <b>重现</b> </div>
+    <div class="brand">TIANTAN REIMAGINED</div>
+    <div class="zh">圜丘 / 回音壁 / 丹陛桥 / 祈年殿滚动导览,延续波斯波利斯的镜头手法。</div>
+    <div class="meta"><span class="dir">tiantan-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7FA876" href="sites/yuanmingyuan-reimagined/index.html">
+    <div class="c1">圆明园 · <b>重现</b> </div>
+    <div class="brand">YUANMINGYUAN REIMAGINED</div>
+    <div class="zh">福海烟水 / 九州清晏 / 蓬岛瑶台 / 西洋楼喷泉,8 章导览。</div>
+    <div class="meta"><span class="dir">yuanmingyuan-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A67B4F" href="sites/great-wall-reimagined/index.html">
+    <div class="c1">长城 · <b>重现</b> </div>
+    <div class="brand">GREAT WALL REIMAGINED</div>
+    <div class="zh">金山岭山脊 / 敌楼 / 垛口 / 烽火 / 云海,8 章导览。</div>
+    <div class="meta"><span class="dir">great-wall-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C89A5B" href="sites/mogao-reimagined/index.html">
+    <div class="c1">莫高窟 · <b>重现</b> </div>
+    <div class="brand">MOGAO REIMAGINED</div>
+    <div class="zh">大漠崖面 / 九层楼 / 弥勒大像 / 经变壁画 / 藏经洞 / 心灯,8 章导览。</div>
+    <div class="meta"><span class="dir">mogao-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#B5714B" href="sites/tulou-reimagined/index.html">
+    <div class="c1">土楼 · <b>重现</b> </div>
+    <div class="brand">TULOU REIMAGINED</div>
+    <div class="zh">茶山 / 门楼 / 环廊 / 祖堂 / 四菜一汤 / 灯火,8 章导览。</div>
+    <div class="meta"><span class="dir">tulou-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C6E9E" href="sites/xuankongsi-reimagined/index.html">
+    <div class="c1">悬空寺 · <b>重现</b> </div>
+    <div class="brand">XUANKONGSI REIMAGINED</div>
+    <div class="zh">金龙峡 / 栈道 / 悬梁 / 三教殿 / 危楼暮色,8 章导览。</div>
+    <div class="meta"><span class="dir">xuankongsi-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#9A6B4F" href="sites/yingxian-tower-reimagined/index.html">
+    <div class="c1">应县木塔 · <b>重现</b> </div>
+    <div class="brand">YINGXIAN TOWER REIMAGINED</div>
+    <div class="zh">塔基 / 释迦 / 斗拱 / 平坐 / 塔刹 / 木痕,8 章导览。</div>
+    <div class="meta"><span class="dir">yingxian-tower-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C4A24E" href="sites/giza-reimagined/index.html">
+    <div class="c1">吉萨 · <b>重现</b> </div>
+    <div class="brand">GIZA REIMAGINED</div>
+    <div class="zh">金字塔群 / 狮身人面像滚动导览,「重现」系列走向世界。</div>
+    <div class="meta"><span class="dir">giza-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A9C7D8" href="sites/taj-reimagined/index.html">
+    <div class="c1">泰姬陵 · <b>重现</b> </div>
+    <div class="brand">TAJ REIMAGINED</div>
+    <div class="zh">长池水镜 / 大理石内殿 / 宣礼塔滚动导览。</div>
+    <div class="meta"><span class="dir">taj-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7C9A6D" href="sites/angkor-reimagined/index.html">
+    <div class="c1">吴哥窟 · <b>重现</b> </div>
+    <div class="brand">ANGKOR REIMAGINED</div>
+    <div class="zh">护城河 / 西长堤 / 花萼五塔滚动导览。</div>
+    <div class="meta"><span class="dir">angkor-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D9A441" href="sites/stonehenge-reimagined/index.html">
+    <div class="c1">巨石阵 · <b>夏至密码</b></div>
+    <div class="brand">STONEHENGE · SOLSTICE ALIGNMENT · 题材复刻自 MeltTheManual/stonehenge-solstice</div>
+    <div class="zh">拖动日期与时刻<b>移动太阳</b>:夏至日出方位角 <b>49.23°</b> 对中轴线 <b>49.3°</b>,圆心望向东北,日轮恰好贴着 <b>77m 外的脚跟石</b>跃出——对齐窗口只有几分钟。程序化风化巨石按真实平面图布局(30 槽位幸存格局、马蹄三石塔、凸榫楣石),天空穹顶昼夜连续过渡,6 张中文讲解卡点击石头即出,罗盘 + 方位刻度教学层 + 六个预设机位,程序化风声鸟鸣。three.js r149 零构建双击可用。</div>
+    <div class="meta"><span class="dir">stonehenge-reimagined/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#9E3B32"></i>机构复刻 · 中国二十古机械 <small>× 20 · 运动学均按文献数据验算</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep17-zhinanche-draft-v2.mp4" style="--accent:#B08D57" href="sites/zhinanche/index.html">
+    <div class="c1">指南车 · <b>差动齿轮系</b></div>
+    <div class="brand">《宋史·舆服志》燕肃制(1027)</div>
+    <div class="zh">木仙人执杖指南,车虽回转而所指恒南。差动补偿比 <b>0.200 = r/W</b> 严格成立,直行/蛇行/环转 360°/手动四段试验,木人误差恒 0.000°。</div>
+    <div class="meta"><span class="dir">zhinanche/</span><span class="watch" data-ep="EP17">▶ 解说 EP17</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep18-jiliguche-draft-v2.mp4" style="--accent:#B5A15F" href="sites/jiliguche/index.html">
+    <div class="c1">记里鼓车 · <b>齿轮系 100:1</b></div>
+    <div class="brand">《宋史·舆服志》卢道隆制(1027)</div>
+    <div class="zh">足轮经四级齿轮减速 <b>100:1</b>(立100→下10→旋10→中100),行一里下层木人<b>左右交替击鼓</b>,十里上层木人击镯;演示节奏压缩 50:1 并全程明示。</div>
+    <div class="meta"><span class="dir">jiliguche/</span><span class="watch" data-ep="EP18">▶ 解说 EP18</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep20-longgu-shuiche-draft-v2.mp4" style="--accent:#7FB8A8" href="sites/longgu-shuiche/index.html">
+    <div class="c1">龙骨水车 · <b>链轮刮板循环</b></div>
+    <div class="brand">《天工开物·乃粒》翻车图</div>
+    <div class="zh">36 节闭合链沿<b>上行直段→上轮弧→下行→下轮弧</b>精确摆位,刮板源源提水。流量 Q=vAφ 三档实测与公式一致。</div>
+    <div class="meta"><span class="dir">longgu-shuiche/</span><span class="watch" data-ep="EP20">▶ 解说 EP20</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep19-didongyi-draft-v2.mp4" style="--accent:#9E3B32" href="sites/didongyi/index.html">
+    <div class="c1">候风地动仪 · <b>都柱倒立摆+八道</b></div>
+    <div class="brand">《后汉书·张衡传》(132)·冯锐复原思路</div>
+    <div class="zh">都柱倾达 6° 触发八方龙口吐丸——<b>触发方位=落丸方位</b>严格一致,半剖樽体可见都柱与八道。</div>
+    <div class="meta"><span class="dir">didongyi/</span><span class="watch" data-ep="EP19">▶ 解说 EP19</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep21-tongche-draft-v2.mp4" style="--accent:#4FA3C7" href="sites/tongche/index.html">
+    <div class="c1">筒车 · <b>立轮斜筒自汲</b></div>
+    <div class="brand">王祯《农书》筒车图</div>
+    <div class="zh">26 竹筒底部兜水、顶部倾入笧槽。流量 <b>Q=nVω/2π</b> 载入模拟 30s 自检,实测与公式一致。</div>
+    <div class="meta"><span class="dir">tongche/</span><span class="watch" data-ep="EP21">▶ 解说 EP21</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep22-shuidui-draft-v2.mp4" style="--accent:#C8A96E" href="sites/shuidui/index.html">
+    <div class="c1">水碓 · <b>拨杆凸轮四碓</b></div>
+    <div class="brand">《天工开物》水碓图</div>
+    <div class="zh">拨杆相位差 90°,四碓连舂——压下/滑脱/落体(t=0.356s)状态机,撞击数与相位互锁断言。</div>
+    <div class="meta"><span class="dir">shuidui/</span><span class="watch" data-ep="EP22">▶ 解说 EP22</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep23-louche-draft-v2.mp4" style="--accent:#D8C08E" href="sites/louche/index.html">
+    <div class="c1">耧车 · <b>三管下种</b></div>
+    <div class="brand">王祯《农书》·西汉赵过三脚耧</div>
+    <div class="zh">耧斗调节板开度可调(←/→),三管落种均匀 <b>±2%</b>,沟内落点分布可视。</div>
+    <div class="meta"><span class="dir">louche/</span><span class="watch" data-ep="EP23">▶ 解说 EP23</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep24-fengshan-che-draft-v2.mp4" style="--accent:#E9C93C" href="sites/fengshan-che/index.html">
+    <div class="c1">风扇车 · <b>手摇风选</b></div>
+    <div class="brand">《天工开物》扇车图</div>
+    <div class="zh">糠秕轻被吹入远口、谷粒重落近口——偏移-粒重<b>分级可验算</b>,糠占比 ≈34% 实测。</div>
+    <div class="meta"><span class="dir">fengshan-che/</span><span class="watch" data-ep="EP24">▶ 解说 EP24</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep25-shuimo-draft-v2.mp4" style="--accent:#A9C7D8" href="sites/shuimo/index.html">
+    <div class="c1">水磨 · <b>立轮直驱</b></div>
+    <div class="brand">王祯《农书》水轮三事</div>
+    <div class="zh">立轮同轴直驱上磨(1:1),磨速=轮速;DRIVE 面板三级角标同步,出粉率 ∝ ω。</div>
+    <div class="meta"><span class="dir">shuimo/</span><span class="watch" data-ep="EP25">▶ 解说 EP25</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep26-shuipai-draft-v2.mp4" style="--accent:#8C7E6A" href="sites/shuipai/index.html">
+    <div class="c1">水排 · <b>曲柄连杆滑块</b></div>
+    <div class="brand">王祯《农书》·东汉杜诗(31)</div>
+    <div class="zh">立轮曲柄连杆滑块驱动门式风箱——滑块位移<b>闭式公式逐帧断言</b>,λ=0.26 死点可见。</div>
+    <div class="meta"><span class="dir">shuipai/</span><span class="watch" data-ep="EP26">▶ 解说 EP26</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep27-fengxiang-draft-v2.mp4" style="--accent:#C76A5A" href="sites/fengxiang/index.html">
+    <div class="c1">活塞风箱 · <b>双动活塞</b></div>
+    <div class="brand">《天工开物》冶铸鼓风</div>
+    <div class="zh">四枚薄板活门随压差启闭——活塞往复<b>任一行程恒出风</b>(连续性载入断言),炉火随风量旺衰。</div>
+    <div class="meta"><span class="dir">fengxiang/</span><span class="watch" data-ep="EP27">▶ 解说 EP27</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep28-tihuaji-draft-v2.mp4" style="--accent:#C75B39" href="sites/tihuaji/index.html">
+    <div class="c1">提花机 · <b>挽花提沉+投梭</b></div>
+    <div class="brand">《天工开物·乃服》花机图</div>
+    <div class="zh">挽花工楼上提纤、织工投梭打筘——<b>8 纬循环纹样</b>逐位断言,布面纹理逐纬生长。</div>
+    <div class="meta"><span class="dir">tihuaji/</span><span class="watch" data-ep="EP28">▶ 解说 EP28</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep30-paoshiji-draft-v2.mp4" style="--accent:#6E6E6E" href="sites/paoshiji/index.html">
+    <div class="c1">抛石机 · <b>配重杠杆弹射</b></div>
+    <div class="brand">《元史》襄阳炮(1272)</div>
+    <div class="zh">能量法 ω=√(2mgh/I) 加速,弹道子步进积分——<b>射程与理论偏差 <1%</b>,←/→ 换配重发射。</div>
+    <div class="meta"><span class="dir">paoshiji/</span><span class="watch" data-ep="EP30">▶ 解说 EP30</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep31-liannu-draft-v2.mp4" style="--accent:#5B6E5A" href="sites/liannu/index.html">
+    <div class="c1">诸葛连弩 · <b>杠杆往复装填</b></div>
+    <div class="brand">《三国志》注引《魏氏春秋》</div>
+    <div class="zh">「一弩十矢俱发」——落矢/钩弦/脱牙状态机,矢匣倒数,<b>空匣停射</b>断言。</div>
+    <div class="meta"><span class="dir">liannu/</span><span class="watch" data-ep="EP31">▶ 解说 EP31</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep29-fangche-draft-v2.mp4" style="--accent:#B98A5E" href="sites/fangche/index.html">
+    <div class="c1">三锭脚踏纺车 · <b>绳传动 ×16.7</b></div>
+    <div class="brand">王祯《农书》木棉纺车图</div>
+    <div class="zh">双踏板相位差 90°,三绳圈分传三锭——传动比 <b>×16.7</b> 可验算,三锭同速。</div>
+    <div class="meta"><span class="dir">fangche/</span><span class="watch" data-ep="EP29">▶ 解说 EP29</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep32-shuiyun-yixiangtai-draft-v2.mp4" style="--accent:#B08D57" href="sites/shuiyun-yixiangtai/index.html">
+    <div class="c1">水运仪象台 · <b>天关天锁擒纵</b></div>
+    <div class="brand">苏颂《新仪象法要》(1092)</div>
+    <div class="zh">枢轮 36 斗注满失衡,天关天锁<b>间歇步进 10°/斗</b>——36 步恰一周,昼夜机轮随动,顶部浑仪。</div>
+    <div class="meta"><span class="dir">shuiyun-yixiangtai/</span><span class="watch" data-ep="EP32">▶ 解说 EP32</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep33-tonghu-dilou-draft-v2.mp4" style="--accent:#7FA8C7" href="sites/tonghu-dilou/index.html">
+    <div class="c1">铜壶滴漏 · <b>恒定水头四级壶</b></div>
+    <div class="brand">元代广州铜壶滴漏(1316)</div>
+    <div class="zh">日壶溢流保水头恒定,<b>Q=C·A·√(2gh)</b> 恒定,浮舟托箭百刻匀升。</div>
+    <div class="meta"><span class="dir">tonghu-dilou/</span><span class="watch" data-ep="EP33">▶ 解说 EP33</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep34-jianyi-draft-v2.mp4" style="--accent:#88AACE" href="sites/jianyi/index.html">
+    <div class="c1">简仪 · <b>赤道式四游环</b></div>
+    <div class="brand">郭守敬创制(1276)</div>
+    <div class="zh">四游环绕极轴,<b>去极度=转角</b>(ψ=90°−δ),四星瞄准读数收敛断言。</div>
+    <div class="meta"><span class="dir">jianyi/</span><span class="watch" data-ep="EP34">▶ 解说 EP34</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep35-zoumadeng-draft-v2.mp4" style="--accent:#F2A53A" href="sites/zoumadeng/index.html">
+    <div class="c1">走马灯 · <b>热气叶轮</b></div>
+    <div class="brand">《燕京岁时记》</div>
+    <div class="zh">烛数 n ↔ 转速 <b>ω=k·n</b> 阶梯响应(τ≈1.6s),←/→ 调烛,马影投罩。</div>
+    <div class="meta"><span class="dir">zoumadeng/</span><span class="watch" data-ep="EP35">▶ 解说 EP35</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep36-beizhong-xianglu-draft-v2.mp4" style="--accent:#D4AF37" href="sites/beizhong-xianglu/index.html">
+    <div class="c1">被中香炉 · <b>万向支架</b></div>
+    <div class="brand">《西京杂记》丁缓</div>
+    <div class="zh">「机环转运四周而炉体常平」——<b>四元数补偿链</b>使炉体恒平 0.0000°(960 帧实测)。</div>
+    <div class="meta"><span class="dir">beizhong-xianglu/</span><span class="watch" data-ep="EP36">▶ 解说 EP36</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#9E3B32"></i>机构复刻 · 中国古机械 第二批 <small>× 20 · 运动学均按文献数据验算</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep37-jiegao-draft-v2.mp4" style="--accent:#8FAE6B" href="sites/jiegao/index.html">
+    <div class="c1">桔槔 · <b>配重杠杆汲水</b></div>
+    <div class="brand">《庄子·天地》</div>
+    <div class="zh">「后重前轻,挈水若抽,数如泆汤」——竖桩横杆配重坠石,杠杆比 <b>2.2</b> 严格成立;俯身取满、松手自起,一俯一汲如泆汤。</div>
+    <div class="meta"><span class="dir">jiegao/</span><span class="watch" data-ep="EP37">▶ 解说 EP37</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep38-lulu-draft-v2.mp4" style="--accent:#6BA8A0" href="sites/lulu/index.html">
+    <div class="c1">辘轳 · <b>卷筒绞车汲水</b></div>
+    <div class="brand">汉画像石 · 《农政全书》</div>
+    <div class="zh">摇柄卷筒收放井绳,定滑轮省力——曲柄/卷筒半径比 <b>2.5</b>,汉式高井栏;抱瓮而灌自此为机井所代。</div>
+    <div class="meta"><span class="dir">lulu/</span><span class="watch" data-ep="EP38">▶ 解说 EP38</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep39-gaozhuan-tongche-draft-v2.mp4" style="--accent:#4FA3C7" href="sites/gaozhuan-tongche/index.html">
+    <div class="c1">高转筒车 · <b>双链轮高扬程</b></div>
+    <div class="brand">王祯《农书》</div>
+    <div class="zh">上下双链轮周而复始,刮板小筒循环提水——链闭合周长 <b>0.70×14 = 9.80m</b>、链速 0.45m/s 可验算,扬程逾丈,倍于翻车。</div>
+    <div class="meta"><span class="dir">gaozhuan-tongche/</span><span class="watch" data-ep="EP39">▶ 解说 EP39</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep40-quyuanli-draft-v2.mp4" style="--accent:#A67B5B" href="sites/quyuanli/index.html">
+    <div class="c1">曲辕犁 · <b>犁评调节耕深</b></div>
+    <div class="brand">唐 · 陆龟蒙《耒耜经》</div>
+    <div class="zh">江东犁十一部件,犁评进退调深浅——耕深 <b>d = a·sinθ</b>,2.9–14.4cm 连续可调,犁壁翻垡面向一侧。</div>
+    <div class="meta"><span class="dir">quyuanli/</span><span class="watch" data-ep="EP40">▶ 解说 EP40</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep41-shuizhuan-dafangche-draft-v2.mp4" style="--accent:#C7A252" href="sites/shuizhuan-dafangche/index.html">
+    <div class="c1">水转大纺车 · <b>水力八锭</b></div>
+    <div class="brand">王祯《农书》</div>
+    <div class="zh">水轮经大绳轮增速——传动比 <b>0.448/0.032 = 14</b> 严格成立,八锭齐转加捻成缕,昼夜纺绩胜人力数倍。</div>
+    <div class="meta"><span class="dir">shuizhuan-dafangche/</span><span class="watch" data-ep="EP41">▶ 解说 EP41</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep42-raosiche-draft-v2.mp4" style="--accent:#D9A8A0" href="sites/raosiche/index.html">
+    <div class="c1">缫丝车 · <b>脚踏卷绕</b></div>
+    <div class="brand">《天工开物·乃服》</div>
+    <div class="zh">脚踏曲柄转丝框,<b>1:1 偏摆导丝</b>往复 0.28m——茧丝过送丝眼绕框成生丝,丝框匀速、导丝匀摆。</div>
+    <div class="meta"><span class="dir">raosiche/</span><span class="watch" data-ep="EP42">▶ 解说 EP42</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep43-zhamian-jiaochu-draft-v2.mp4" style="--accent:#B5A28C" href="sites/zhamian-jiaochu/index.html">
+    <div class="c1">轧棉搅车 · <b>双辊轧籽</b></div>
+    <div class="brand">《天工开物·乃服》</div>
+    <div class="zh">双木辊<b>外啮合 i=1 反向回转</b>,皮棉过辊隙牵出、棉籽回落;脚踏曲柄行程 0.20m,轧花去籽如飞。</div>
+    <div class="meta"><span class="dir">zhamian-jiaochu/</span><span class="watch" data-ep="EP43">▶ 解说 EP43</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep44-zheche-draft-v2.mp4" style="--accent:#8C9A6B" href="sites/zheche/index.html">
+    <div class="c1">蔗车 · <b>双石辊榨汁</b></div>
+    <div class="brand">《天工开物·甘嗜》</div>
+    <div class="zh">双石立辊顶齿轮<b>外啮合 i=1</b> 反向对滚,牛拽横杆转动——甘蔗横过 <b>0.06m 辊隙</b>压扁出汁,蔗汁流入石槽。</div>
+    <div class="meta"><span class="dir">zheche/</span><span class="watch" data-ep="EP44">▶ 解说 EP44</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep45-youzha-draft-v2.mp4" style="--accent:#A9834F" href="sites/youzha/index.html">
+    <div class="c1">油榨 · <b>悬锤撞楔</b></div>
+    <div class="brand">《天工开物·膏液》</div>
+    <div class="zh">悬锤荡撞木楔,逼紧麹饼束——撞楔锤速 <b>2.64m/s</b>、饼束压缩 <b>18%</b> 可验算,油自缝中渗出入盘。</div>
+    <div class="meta"><span class="dir">youzha/</span><span class="watch" data-ep="EP45">▶ 解说 EP45</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep46-zhibuji-draft-v2.mp4" style="--accent:#7C9A6D" href="sites/zhibuji/index.html">
+    <div class="c1">织布机 · <b>双蹑双综</b></div>
+    <div class="brand">汉画像石斜织机</div>
+    <div class="zh">双蹑踏板交替升降双综开口,<b>梭口 0.09m</b>——梭子穿行引纬、筘打纬压实,纬线逐梭成布。</div>
+    <div class="meta"><span class="dir">zhibuji/</span><span class="watch" data-ep="EP46">▶ 解说 EP46</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep47-hunyi-draft-v2.mp4" style="--accent:#5C7AA8" href="sites/hunyi/index.html">
+    <div class="c1">浑仪 · <b>三重环圈</b></div>
+    <div class="brand">明正统制(现存)</div>
+    <div class="zh">六合仪定、三辰仪转、四游仪窥——极轴倾角 <b>50.1°</b> 严格成立,窥管以四元数法向解析指向,终段瞄准织女星。</div>
+    <div class="meta"><span class="dir">hunyi/</span><span class="watch" data-ep="EP47">▶ 解说 EP47</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep48-shuiyun-huntianyi-draft-v2.mp4" style="--accent:#3F8C7F" href="sites/shuiyun-huntianyi/index.html">
+    <div class="c1">水运浑天仪 · <b>漏壶驱浑象</b></div>
+    <div class="brand">张衡《浑天仪注》</div>
+    <div class="zh">漏壶注水转水轮,三级齿轮减速 <b>i=28</b>——浑象一转即一日(×1200 演示),蓂荚按日升落,与天相应。</div>
+    <div class="meta"><span class="dir">shuiyun-huntianyi/</span><span class="watch" data-ep="EP48">▶ 解说 EP48</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep49-xiangfeng-tongwu-draft-v2.mp4" style="--accent:#C0996B" href="sites/xiangfeng-tongwu/index.html">
+    <div class="c1">相风铜乌 · <b>欠阻尼对风</b></div>
+    <div class="brand">《三辅黄图》汉灵台</div>
+    <div class="zh">铜乌遇风乃动,乌首恒指风来向——欠阻尼二阶对风 <b>ζω=1.6</b>,稳态误差 <b>0°</b>(解析严格),阵风 ±90° 过冲一次回落。</div>
+    <div class="meta"><span class="dir">xiangfeng-tongwu/</span><span class="watch" data-ep="EP49">▶ 解说 EP49</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep50-qiqi-draft-v2.mp4" style="--accent:#B0713F" href="sites/qiqi/index.html">
+    <div class="c1">欹器 · <b>虚则欹中则正满则覆</b></div>
+    <div class="brand">《荀子·宥坐》</div>
+    <div class="zh">尖底敞口双耳悬枢——合重心数值积分定 <b>f欹≈0.02、f覆≈0.64</b>;空器倚挡、半注自正、满则翻覆沥水,孔子以之喻持满之道。</div>
+    <div class="meta"><span class="dir">qiqi/</span><span class="watch" data-ep="EP50">▶ 解说 EP50</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep51-changxin-gongdeng-draft-v2.mp4" style="--accent:#C9A24E" href="sites/changxin-gongdeng/index.html">
+    <div class="c1">长信宫灯 · <b>双屏调光导烟</b></div>
+    <div class="brand">西汉 · 满城汉墓</div>
+    <div class="zh">双弧屏板绕立轴开合 <b>α 0→90°</b> 调光(β=0.8α),右袖烟道导烟入体腔水盘溶烟——世界最早的可调光环保灯。</div>
+    <div class="meta"><span class="dir">changxin-gongdeng/</span><span class="watch" data-ep="EP51">▶ 解说 EP51</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep52-zhuanlun-zang-draft-v2.mp4" style="--accent:#7A6248" href="sites/zhuanlun-zang/index.html">
+    <div class="c1">转轮藏 · <b>八棱书藏下枢针</b></div>
+    <div class="brand">宋 · 正定隆兴寺转轮藏殿</div>
+    <div class="zh">八棱藏柜对径 2.6m,下枢藏针 r 0.02 低摩擦承重——一人推之惯转 <b>13.6 rad(&gt;2 圈)</b>,经函 24 函绕轴巡转。</div>
+    <div class="meta"><span class="dir">zhuanlun-zang/</span><span class="watch" data-ep="EP52">▶ 解说 EP52</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep53-chechuan-draft-v2.mp4" style="--accent:#5B7F8E" href="sites/chechuan/index.html">
+    <div class="c1">车船 · <b>双明轮踏行</b></div>
+    <div class="brand">《旧唐书》李皋战舰</div>
+    <div class="zh">船内踏板曲柄经同径链轮链传动双明轮(r 0.55,8 桨),不滑移船速 <b>v=ω·r=0.495 m/s</b>,翔风鼓浪疾若挂帆。</div>
+    <div class="meta"><span class="dir">chechuan/</span><span class="watch" data-ep="EP53">▶ 解说 EP53</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep54-chaoche-draft-v2.mp4" style="--accent:#8E7C5A" href="sites/chaoche/index.html">
+    <div class="c1">巢车 · <b>剪式升降望楼</b></div>
+    <div class="brand">《武经总要》</div>
+    <div class="zh">双级剪叉四臂 φ 25°↔62°,绞盘收绳 <b>1.04m=2.07 圈</b>(严格),望楼舱升高 <b>2.26 倍</b>,瞰城内虚实。</div>
+    <div class="meta"><span class="dir">chaoche/</span><span class="watch" data-ep="EP54">▶ 解说 EP54</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep55-chuangzinu-draft-v2.mp4" style="--accent:#6E5A45" href="sites/chuangzinu/index.html">
+    <div class="c1">三弓床弩 · <b>叠张绞车击发</b></div>
+    <div class="brand">《武经总要》三弓八牛弩</div>
+    <div class="zh">前双弓+反弓叠张 <b>F=3F₀=600kgf</b>,绞车省力 3.33 倍张弦 0.9m,弦储能 2646 J → 弹速 <b>59 m/s</b>。</div>
+    <div class="meta"><span class="dir">chuangzinu/</span><span class="watch" data-ep="EP55">▶ 解说 EP55</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" data-video="https://github.com/zmc1212/gpt-sites-pages/releases/download/video-series-v1/ep56-menghuo-yougui-draft-v2.mp4" style="--accent:#A85A32" href="sites/menghuo-yougui/index.html">
+    <div class="c1">猛火油柜 · <b>双筒活塞喷火</b></div>
+    <div class="brand">《武经总要》</div>
+    <div class="zh">铜油柜+双活塞筒唧泵反相推拉,面积比增压 <b>14:1</b>,喷速 <b>3.09 m/s</b>,火楼引燃油流成炬——世界第一具火焰喷射器。</div>
+    <div class="meta"><span class="dir">menghuo-yougui/</span><span class="watch" data-ep="EP56">▶ 解说 EP56</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#9E3B32"></i>机构复刻 · 中国古机械 第三批 <small>× 20 · 运动学均按文献数据验算</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#6E8C5A" href="sites/shuinnian/index.html">
+    <div class="c1">水碾 · <b>卧轮直驱碢干</b></div>
+    <div class="brand">王祯《农书·农器图谱》卷十九</div>
+    <div class="zh">「轮轴上端穿其碢干,水激则碢随轮转」——井筒卧轮直驱 1:1,双石辊绕碾槽公转、滚动无滑移自转 <b>ω自=8.67ω公</b>,谷粒过辊碾白计数。</div>
+    <div class="meta"><span class="dir">shuinnian/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#5C7A8C" href="sites/longweiche/index.html">
+    <div class="c1">龙尾车 · <b>斜置螺旋提水</b></div>
+    <div class="brand">《泰西水法·龙尾车记》(1612)</div>
+    <div class="zh">「拐木一转而得二转」——接轮16T:枢轮8T,双头螺旋轴 sinθ=0.6 提水 H=2.79m,水口袋沿螺沟爬升,<b>q=λπ(R²−r²)S×2</b> 载入断言。</div>
+    <div class="meta"><span class="dir">longweiche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C7A5A" href="sites/fengli-shuiche/index.html">
+    <div class="c1">风力水车 · <b>八帆立轴翻车</b></div>
+    <div class="brand">《天工开物·乃粒》「扬郡以风帆数扇」</div>
+    <div class="zh">八帆偏装 45° 立轴,卧轮24T:立轮16T(<b>i=1.5</b>)驱动 26 节龙骨链,匀速 0.7m/s;能量断言 <b>P风 ≥ ρgQH/η</b>(额定裕度×1.42),低速明示赤字。</div>
+    <div class="meta"><span class="dir">fengli-shuiche/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#9A6A4C" href="sites/mianluo/index.html">
+    <div class="c1">水击面罗 · <b>攀耳击摆筛面</b></div>
+    <div class="brand">王祯《农书》「罗因水力互击桩柱」</div>
+    <div class="zh">立轮直驱卧轴,3 攀耳 120° 周期击撞杆,罗框四索悬吊作<b>阻尼单摆</b>(T₀=1.955s),「筛面甚速,倍于人力」,面粉累计筛落。复原方案标注争议。</div>
+    <div class="meta"><span class="dir">mianluo/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7A6A8C" href="sites/zhuoyu-shuideng/index.html">
+    <div class="c1">琢玉水凳 · <b>踏板绳传动砣机</b></div>
+    <div class="brand">《天工开物·珠玉》+《玉作图》扎碢</div>
+    <div class="zh">「足踏圆盘使转,添沙剖玉」——踏板往复→绳鼓→主轴回摆 ±3.5rad,碢缘线速 = <b>3.11×绳速</b>,解玉砂浆滴注,划痕「逐忽划断」渐深。</div>
+    <div class="meta"><span class="dir">zhuoyu-shuideng/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C5A4C" href="sites/paizilun/index.html">
+    <div class="c1">转轮排字盘 · <b>以字就人</b></div>
+    <div class="brand">王祯《造活字印书法》(1313)</div>
+    <div class="zh">「一人中坐,左右俱可推转摘字」——双轮盘径七尺 8 扇 280 格(程序化字贴),推转惯量 <b>J=½MR²=24.8,τ≈10s</b>,扇步进 45°,印版 48 字渐满。</div>
+    <div class="meta"><span class="dir">paizilun/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#5A7A5C" href="sites/zhuotongjing/index.html">
+    <div class="c1">卓筒井 · <b>冲击凿井</b></div>
+    <div class="brand">苏轼《东坡志林》+《天工开物·井盐》</div>
+    <div class="zh">「用圜刃凿如碗大,深者数十丈」——踩碓杠杆 i=2.2 抬锥,松足自重下冲 <b>v=√(2gh)=2.42m/s,E=176J</b>,每击进尺 8mm,井深累计;竹弓不用(无明文)。</div>
+    <div class="meta"><span class="dir">zhuotongjing/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A8764C" href="sites/taolun/index.html">
+    <div class="c1">快轮制陶 · <b>立轴双盘拉坯</b></div>
+    <div class="brand">《天工开物·陶埏》+ 李文杰快轮研究</div>
+    <div class="zh">「盘沿以短竹棍拨运旋转」——拨沿储能 I=½MR²=2.02,衰减 τ=I/b,<b>临界 90rpm</b> 可拉坯(黄线判据),泥料筒→碗收口成形,「过利刀二次」。</div>
+    <div class="meta"><span class="dir">taolun/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C8C5A" href="sites/nuji/index.html">
+    <div class="c1">弩机 · <b>青铜触发联动</b></div>
+    <div class="brand">《释名·释兵》+ 镇原/满城出土</div>
+    <div class="zh">郭半剖可视牙-牛-悬刀销轴联动(<b>k=1.5</b>),六石弦储能 142J,箭速 75.4m/s,望山 6 格瞄准(每格 Δθ≈8.8°),弹道压缩 20:1 至落点标记。</div>
+    <div class="meta"><span class="dir">nuji/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#4C6A8C" href="sites/yunti/index.html">
+    <div class="c1">云梯 · <b>车载折叠梯</b></div>
+    <div class="brand">《武经总要·前集·卷十》</div>
+    <div class="zh">「下施六轮,上立二梯,各长二丈馀,中施转轴」——主梯 6.2m 绞升 15°→55°(绳 1.86 圈),飞梯 +2.2m(2.92 圈),<b>可达 H=8.4sin55°+1.10=7.98m</b> 抵城堞。</div>
+    <div class="meta"><span class="dir">yunti/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#C9A227" href="sites/guibiao/index.html">
+    <div class="c1">圭表 · <b>八尺表量天</b></div>
+    <div class="brand">《周髀算经·卷上》两至影长</div>
+    <div class="zh">「周髀长八尺,夏至之日晷一尺六寸」——L=H/tan(h),h=90°−φ+δ(φ=35.3° 反推自洽),廿四气扫描,<b>夏至影 0.374m 差&lt;5mm ✓</b>,冬至 ≈一丈三尺五寸。</div>
+    <div class="meta"><span class="dir">guibiao/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#6A5A8C" href="sites/yangyi/index.html">
+    <div class="c1">仰仪 · <b>针孔球面投影</b></div>
+    <div class="brand">《元史·天文志》+《仰仪铭》郭守敬</div>
+    <div class="zh">「视日透光,何度在也」——铜釜内壁节气圈×时辰经线,球心璇玑板针孔投日像,<b>像距天顶=90°−h</b>(夏至10.5°/冬至58.5°),像径 R×0.53°=14mm。</div>
+    <div class="meta"><span class="dir">yangyi/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#4C8C7A" href="sites/zhinanzhen/index.html">
+    <div class="c1">水浮指南针 · <b>常微偏东</b></div>
+    <div class="brand">沈括《梦溪笔谈·卷二十四》</div>
+    <div class="zh">针穿灯草浮碗面,阻尼摆 θ̈=−ω₀²sin(θ−ε)−2ζω₀θ̇ 收敛至<b>磁南偏东 3°</b>(世界最早磁偏角记载);拨针 ±35° 振荡收敛;航海晃动针稳;缕悬架四法对比。</div>
+    <div class="meta"><span class="dir">zhinanzhen/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C4C5A" href="sites/quanhen/index.html">
+    <div class="c1">权衡 · <b>本短标长</b></div>
+    <div class="brand">《墨子·经说下》+ 左家公山天平</div>
+    <div class="zh">「衡,加重于其一旁,必捶……则本短标长」——提纽两档(等臂/杆秤),权滑标臂,<b>x*=(W物+W盘)L本/W权</b>,称 250/125/62.5g 梁阻尼收敛水平,环权五枚。</div>
+    <div class="meta"><span class="dir">quanhen/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#B08D3A" href="sites/yangsui/index.html">
+    <div class="c1">阳燧 · <b>凹面镜取火</b></div>
+    <div class="brand">《周礼·司烜氏》+ 黄堆西周出土</div>
+    <div class="zh">「光聚为一点,大如麻菽,著物则火发」——凹面镜 R19.8cm,<b>f=R/2=9.9cm</b>,焦斑 0.93mm,聚光比 ~8950,镜面功率 5W,艾绒置焦点数秒引燃。</div>
+    <div class="meta"><span class="dir">yangsui/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#A85A3A" href="sites/tuoluo/index.html">
+    <div class="c1">陀螺 · <b>睡陀螺进动</b></div>
+    <div class="brand">《帝京景物略》「急掣其鞭,一掣则转」</div>
+    <div class="zh">「转之疾,正如卓立地上,顶光旋旋,影不动也」——鞭击起转,进动 <b>Ω=mgr/(Iω)∝1/ω</b> 衰减加快,稳定阈值 ω²>4mgr/I(598rpm),缓则倾倒。</div>
+    <div class="meta"><span class="dir">tuoluo/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D9862F" href="sites/kongmingdeng/index.html">
+    <div class="c1">孔明灯 · <b>热浮升判据</b></div>
+    <div class="brand">《淮南万毕术》「艾火令鸡子飞」锚点</div>
+    <div class="zh">等压升温 ρ内=ρ外T外/T内,<b>起飞判据 F≥W → 内温 73℃</b> 离地,满温 90℃ 净升 0.14N 缓升巡航,燃尽冷却回落;发明说为传说,口径明示。</div>
+    <div class="meta"><span class="dir">kongmingdeng/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#5A8C4C" href="sites/zhuqingting/index.html">
+    <div class="c1">竹蜻蜓 · <b>双翼旋翼拉力</b></div>
+    <div class="brand">《抱朴子》飞车传说+1784「中国陀螺」西传</div>
+    <div class="zh">搓轴起旋,拉力 <b>T=C_T·ρ·A·(ωR)²</b> 过 mg=196mN 离手升空,悬停 ω 112.7rad/s,空气阻矩衰减,落掌再搓;1784 法国科学院「中国陀螺」演示。</div>
+    <div class="meta"><span class="dir">zhuqingting/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#4C7A8C" href="sites/yaolu/index.html">
+    <div class="c1">摇橹 · <b>攻角反转连续推进</b></div>
+    <div class="brand">《释名·释船》「橹,膂也」+ 东汉陶船</div>
+    <div class="zh">橹钮球窝侧摆 β±24°、攻角 α 反转(相位差 90°)两半程都向前——<b>橹不出水连续推进</b>,F=½ρA(v板sinα)²,匀速 ≈0.7m/s,「一橹抵三桨」。</div>
+    <div class="meta"><span class="dir">yaolu/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#8C5A5A" href="sites/jiulianhuan/index.html">
+    <div class="c1">九连环 · <b>解环状态机 341 步</b></div>
+    <div class="brand">《战国策》玉连环渊源+《红楼梦》定型</div>
+    <div class="zh">「大家解九连环顽呢」——第 1 环随时动、第 k 环须 k−1 在框且更前全下,状态机完整走通 <b>f(9)=⌊2¹⁰/3⌋=341 步</b>,状态序列=格雷码,逆转复原+手动步进。</div>
+    <div class="meta"><span class="dir">jiulianhuan/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#D9862F"></i>纸艺世界 · 3D 探索 <small>× 1 · 忠实移植自 xikhar/papertrails(MIT)</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#D9862F" href="sites/papertrails/dist-file/index.html">
+    <div class="c1">Papertrails · <b>无尽纸境探索</b></div>
+    <div class="brand">PAPERTRAILS · THREE.JS · POP-UP BOOK</div>
+    <div class="zh">一本会走路的立体书:WFC 程序化纸页世界,走近时纸片<b>逐层折起立住</b>;WASD / 点击行走,Shift 奔跑,Tab 翻开<b>纸艺地图页</b>,N 切昼夜(灯笼暖光 + 萤火虫),V 换视角。源码与手绘资产完整保留原作署名。</div>
+    <div class="meta"><span class="dir">papertrails/dist-file/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#D2452F"></i>创意动效 <small>× 6</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#D2452F" href="sites/crimson-loong-replica/index.html">
+    <div class="c1">赤龍 · <b>90 秒循环龙片</b> </div>
+    <div class="brand">CRIMSON LOONG · THREE.JS</div>
+    <div class="zh">单 HTML 文件的循环动画:零素材、全代码生成的一条赤龙。</div>
+    <div class="meta"><span class="dir">crimson-loong-replica/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7E6BC4" href="sites/image-trail-effect/index.html">
+    <div class="c1">图片拖尾 · <b>效果复刻</b> </div>
+    <div class="brand">IMAGE TRAIL · CODROPS SKETCHES 005–007</div>
+    <div class="zh">Codrops 经典图片拖尾交互的逐帧复刻(原生 ES 模块)。</div>
+    <div class="meta"><span class="dir">image-trail-effect/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#4FA8A0" href="sites/tokyo-word-city-3d/index.html">
+    <div class="c1">词语筑成的街 · <b>东京词云</b> </div>
+    <div class="brand">TOKYO WORD CITY 3D</div>
+    <div class="zh">东京都心的中文词云 3D——词语就是建筑,概念原创复刻。</div>
+    <div class="meta"><span class="dir">tokyo-word-city-3d/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#4E9BB0" href="sites/wuhan-word-city-3d/index.html">
+    <div class="c1">词语筑成的街 · <b>武汉词云</b> </div>
+    <div class="brand">WUHAN WORD CITY 3D</div>
+    <div class="zh">江城的中文词云 3D,东京词云的姊妹篇。</div>
+    <div class="meta"><span class="dir">wuhan-word-city-3d/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#88AACE" href="sites/yichang-word-city-3d/index.html">
+    <div class="c1">词语筑成的街 · <b>宜昌词云</b> </div>
+    <div class="brand">YICHANG WORD CITY 3D</div>
+    <div class="zh">宜昌的中文词云 3D,词云系列回到系列首作的城市。</div>
+    <div class="meta"><span class="dir">yichang-word-city-3d/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#7D6CF0" href="sites/gamecube-intro/index.html">
+    <div class="c1">GameCube 开机动画 · <b>复刻播放器</b></div>
+    <div class="brand">GAMECUBE INTRO · 题材复刻 · MIT</div>
+    <div class="zh">复刻 vaexenc/gcintro:紫色小方块沿格点路线<b>翻滚 18 格</b>(每格 90° 滚转 + 小跳),跃入大立方一角组出经典「G」标志,GAMECUBE / NINTENDO 字标弹簧入场;GX TEV 双色着色、屏幕空间反贴的三面 logo 贴图,播放器支持<b>拖时间轴 / 倒放 / 变速 / 循环 / 轨道视差 / 线框 / 8 种配色</b>,3 条 WebAudio 离线合成音轨正反双 buffer 不脱拍。零素材零构建,双击可用。</div>
+    <div class="meta"><span class="dir">gamecube-intro/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#1899A6"></i>海岛钓鱼 · 开放世界小游戏 <small>× 1 · 题材复刻自 dgreenheck/tidewater(MIT)</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#1899A6" href="sites/tidewater-replica/index.html">
+    <div class="c1">潮水 · <b>海岛钓鱼</b></div>
+    <div class="brand">TIDEWATER REPLICA · 题材复刻 · MIT</div>
+    <div class="zh">低多边形海岛钓鱼的题材复刻:按住空格蓄力抛竿、浮漂猛沉瞬间刺鱼、<b>绿区控线搏鱼</b>(绷过头会断线);12 种加勒比渔获按渔场与时段出没,天黑前卖给 Joe、去 Marta 升级竿线轮灯;可开船出海,一昼夜 8 分钟,深海偶有鲸跃彩蛋。零构建,双击可用。</div>
+    <div class="meta"><span class="dir">tidewater-replica/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#2AA3C4"></i>桌面玩具 · 物理小游戏 <small>× 1 · 题材复刻自 franky-adl/water-ring-toss-game(MIT)</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#2AA3C4" href="sites/shuizhong-taoquan/index.html">
+    <div class="c1">水中套圈 · <b>手持水动机</b></div>
+    <div class="brand">WATER RING TOSS · 题材复刻 · MIT</div>
+    <div class="zh">复刻 franky-adl/water-ring-toss-game:1960 年代手持水动机玩具,<b>六只彩色圆环</b>在透明水腔里缓缓下沉,按玩具上的<b>红 / 蓝按钮</b>从底部喷口激起水流把环抛起——翻着跟头套上两根立柱,<b>轻按慢压才有手感,手太猛套好的环也会被顶飞</b>;圆环刚体物理 + 圆角腔壁支撑函数碰撞 + 套柱堆叠 / 顶出状态机,通关有小和弦庆祝。全程序化几何与贴图,零构建双击可用。</div>
+    <div class="meta"><span class="dir">shuizhong-taoquan/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#E8590C"></i>科普可视化 · 交互演示 <small>× 6 · 开源题材复刻,署名见各站</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#E8590C" href="sites/open-anatomy-3d/index.html">
+    <div class="c1">开放人体解剖 · <b>交互式 3D</b></div>
+    <div class="brand">OPEN ANATOMY 3D · BODYPARTS3D · CC BY 4.0</div>
+    <div class="zh">复刻 MervinR07/open-anatomy-3d:男 / 女两套全身模型,<b>7 大系统 147 个结构</b>逐个悬停识别、点击固定标注卡片,引线随视角实时跟随;七层系统独立开关,关节是隐藏热点,女性躯体含子宫 / 卵巢等专属器官。全量中文译名,模型 Base64 内置,file:// 双击可用。</div>
+    <div class="meta"><span class="dir">open-anatomy-3d/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D9A863" href="sites/chladni-cymatics/index.html">
+    <div class="c1">克拉尼声振图案 · <b>沙粒共振</b></div>
+    <div class="brand">CHLADNI CYMATICS · 题材复刻 · MIT</div>
+    <div class="zh">复刻 ekimroyrp/260610_ChladniCymatics:3 万颗沙粒洒在振动的方形钢板上,<b>解析式共振梯插值</b>让 345–5865 Hz 任意频率都呈现连续变形的对称节线花纹;拖旋钮、点预设、开扫频看图案流动,<b>振幅热图</b>直接看见「沙为何聚在节线」,WebAudio 同频发声可静音。实测落线率 100%,零构建双击可用。</div>
+    <div class="meta"><span class="dir">chladni-cymatics/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#D96A8B" href="sites/dla-coral-replica/index.html">
+    <div class="c1">珊瑚花园 · <b>DLA 生长实验室</b></div>
+    <div class="brand">DLA CORAL · 题材复刻 · MIT</div>
+    <div class="zh">复刻 ekimroyrp/260716_DLACoral:暗色影棚里一粒种子长成枝杈丛生的分形珊瑚——<b>扩散限制聚集</b>行走者随机扩散、表面成核,八种粘附邻域 × 阈值/概率长出疏枝 / 花椰菜 / 雪球 / 环礁丛;<b>出生序渐变</b>把生长史画进颜色(深处绯红、梢头莹白),时间轴任意倒带回放;三点光 + 软阴影 + 泛光 + ACES,同 seed 逐位复现,八项自检。零构建双击可用。</div>
+    <div class="meta"><span class="dir">dla-coral-replica/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#22D3EE" href="sites/procedural-spider-replica/index.html">
+    <div class="c1">八足游蛛 · <b>解析 IK 步态</b></div>
+    <div class="brand">PROCEDURAL SPIDER · 题材复刻 · MIT</div>
+    <div class="zh">复刻 majidmanzarpour/threejs-procedural-spider:一只八足蜘蛛在荒原上爬坡上墙,<b>无动画片段、无骨骼绑定、无物理引擎</b>——闭式两骨 IK 一次解出膝关节(分解式/解析式双求解器可切),八腿相位轮步态 Cruse 规则让脚钉在世界系、机身「跑过」即抬步划弧;已落脚<b>支撑面共形机身</b>斜坡前倾、越阶提前爬升,贴上垂直面时<b>腹部沿重力下垂弯折</b>;膝摆动避障搜索+硬去穿透,落脚扬尘,Verlet 触肢。8 条滑条 3 个开关实时调参,11 项自检含确定性逐位回放。零构建双击可用。</div>
+    <div class="meta"><span class="dir">procedural-spider-replica/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#B08AD8" href="sites/fourier-epicycles/index.html">
+    <div class="c1">傅里叶级数 · <b>圆环叠加画图</b></div>
+    <div class="brand">FOURIER EPICYCLES · 题材复刻 · MIT</div>
+    <div class="zh">复刻 trozler/myFourierEpicycles:任意闭合路径都是一串旋转圆环的叠加——256 点 DFT 取前 N 项系数按振幅串联成圆环链,笔尖重放你的笔画;<b>项数滑到 4 只剩轮廓,拉满 256 分毫不差</b>,Parseval 能量恒等、截断误差单调与尾部能量界全程断言;心形/五角星/齿轮波预设,手绘一笔即改频谱。Canvas2D 零构建双击可用。</div>
+    <div class="meta"><span class="dir">fourier-epicycles/</span><span class="open">打开站点 →</span></div>
+  </a>
+  <a class="card" style="--accent:#E9C93C" href="sites/double-pendulum/index.html">
+    <div class="c1">双摆混沌 · <b>初值差 1e-6 的分道扬镳</b></div>
+    <div class="brand">DOUBLE PENDULUM · 题材复刻 · UNLICENSE</div>
+    <div class="zh">复刻 skeeto/double-pendulum:拉格朗日方程 + 定步长 RK4,金色主摆与白色幽灵摆初值仅差 <b>1e-6 弧度——log₁₀|Δθ| 发散曲线肉眼爬升、饱和</b>;能量漂移 <5e-6、m2=0 单摆极限、拉格朗日自洽、逐位确定性逐项断言;四档初值预设(准周期/近临界/深混沌/倒立释放)行为分明,θ₁-θ₂ 相位图随手涂鸦。Canvas2D 零构建双击可用。</div>
+    <div class="meta"><span class="dir">double-pendulum/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <span class="pill"><i style="color:#A882D8"></i>创作工具 · 手绘金属形状 <small>× 1 · 题材复刻自 cl0nazepamm/sigils(MIT)</small></span>
+  <span class="rule"></span>
+</div>
+<div class="grid">
+  <a class="card" style="--accent:#A882D8" href="sites/chrome-sigils/index.html">
+    <div class="c1">符记 · <b>手绘镀铬形状</b></div>
+    <div class="brand">SIGILS CREATOR · 题材复刻 · MIT</div>
+    <div class="zh">复刻 cl0nazepamm/sigils:手绘一笔,膨胀成<b>镜面镀铬</b>的充气金属符号——<b>距离场并集</b>让交叉笔画光滑融合、无自交接缝,绘制中扫掠管实时预览、松手瞬间「啪」地熔合;<b>五种材质(铬 / 18K 金 / 玫瑰金 / 黑釉 / 幻彩)× 三套程序化光影环境(影棚 / 霓虹 / 落日)</b>,同一张 Canvas 环境贴图既当背景又当反射源;左右对称镜像、随机符记库、笔画改宽 / 首尾相接自动闭环、撤销重做、一键存 PNG。全程序化生成,零构建双击可用。</div>
+    <div class="meta"><span class="dir">chrome-sigils/</span><span class="open">打开站点 →</span></div>
+  </a>
+</div>
+
+<div id="foot">
+  <span>GPT-SITES · 本地工作区</span>
+  <span>110 个子模块 · 大部分零构建</span>
+</div>
+
+<div id="vmodal" hidden>
+  <div class="vback"></div>
+  <div class="vbox" role="dialog" aria-label="解说视频播放器">
+    <div class="vhead">
+      <span class="vtitle"></span>
+      <span class="vsub"></span>
+      <span class="vclose" title="关闭 (Esc)">✕ 关闭</span>
+    </div>
+    <video controls preload="none"></video>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var modal = document.getElementById('vmodal');
+  var video = modal.querySelector('video');
+  var title = modal.querySelector('.vtitle');
+  var sub = modal.querySelector('.vsub');
+
+  function open(card) {
+    var src = card.getAttribute('data-video') || '';
+    var watch = card.querySelector('.watch');
+    var t = card.querySelector('.c1');
+    title.textContent = t ? t.textContent.trim() : '';
+    sub.textContent = (watch ? watch.getAttribute('data-ep') + ' · ' : '') + src.split('/').pop();
+    // 本地版 data-video 是文件名(相对 video-series/);发布版被 build-pages 重写为完整 https URL
+    video.src = /^https:/.test(src) ? src : 'video-series/' + src;
+    modal.hidden = false;
+    video.play().catch(function () {}); // 用户手势内触发;万一被拒则由用户点播放键
+  }
+  function close() {
+    video.pause();
+    video.removeAttribute('src');
+    video.load(); // 释放已加载的分段缓存
+    modal.hidden = true;
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest) return;
+    var t = e.target.closest('.watch');
+    if (t) {
+      var card = t.closest('.card[data-video]');
+      if (card && !card.classList.contains('disabled')) {
+        e.preventDefault(); // 不触发整卡跳站点
+        open(card);
+      }
+      return;
+    }
+    if (e.target.closest('.vclose') || e.target.closest('.vback')) close();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
+})();
+</script>
+</body>
+</html>

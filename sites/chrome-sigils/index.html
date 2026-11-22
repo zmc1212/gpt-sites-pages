@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>符记 Sigils — 手绘镀铬形状创作器(题材复刻)</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div id="stage"></div>
+<div id="vignette"></div>
+
+<!-- 左上角品牌与笔画数 -->
+<div id="brand">
+  <span class="logo">✦ 符记 <i>SIGILS</i></span>
+  <span class="count">笔画 <b id="stroke-count">0</b></span>
+</div>
+
+<!-- 右侧参数面板 -->
+<div id="panel">
+  <div class="sec">
+    <div class="sec-t">材质</div>
+    <div id="mat-chips" class="chips"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-t">环境</div>
+    <div id="env-chips" class="chips"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-t">笔画粗细 <output id="width-val">16‰</output></div>
+    <input id="width-slider" type="range" min="0.07" max="0.34" step="0.01" value="0.16">
+  </div>
+  <div class="sec row">
+    <label class="switch"><input id="sym-toggle" type="checkbox"><i></i>左右对称</label>
+  </div>
+  <div id="sel-panel" class="sec hidden">
+    <div class="sec-t em">选中笔画</div>
+    <label class="mini">粗细</label>
+    <input id="sel-width" type="range" min="0.07" max="0.34" step="0.01" value="0.16">
+    <label class="switch"><input id="sel-mirror" type="checkbox"><i></i>镜像副本</label>
+    <button id="sel-delete" class="btn danger">删除笔画 <span class="key">Del</span></button>
+  </div>
+</div>
+
+<!-- 底部工具条 -->
+<div id="toolbar">
+  <button id="btn-undo" class="btn" title="Ctrl+Z">⟲ 撤销</button>
+  <button id="btn-redo" class="btn" title="Ctrl+Shift+Z">⟳ 重做</button>
+  <button id="btn-random" class="btn" title="R">🎲 随机符记</button>
+  <button id="btn-clear" class="btn danger">✕ 清空</button>
+  <button id="btn-save" class="btn" title="S">⬇ 保存 PNG</button>
+  <button id="btn-help" class="btn" title="H">? 帮助</button>
+</div>
+
+<!-- 操作提示条 -->
+<div id="hint">左键 / 单指 画笔 · 右键 / 双指 视角 · 滚轮缩放 · 点笔画可选中改宽</div>
+
+<!-- 开始卡 -->
+<div id="card-title">
+  <div class="card">
+    <div class="t1">✦ 符记 <span class="en">SIGILS</span></div>
+    <div class="t2">手绘一笔,即成 chrome 金属符记。在玻璃面上随手勾勒曲线,
+      它们立刻膨胀为镜面镀铬的立体形状——Y2K 时代的铬金属符号美学。
+      五种材质、三套光影环境、左右对称模式,随手就能出一枚又冷又亮的金属符。</div>
+    <div class="t3">左键 / 单指 画笔 · 右键 / 双指 旋转视角 · 滚轮缩放 · 点笔画选中 · <b>R</b> 随机符记 · <b>S</b> 存图</div>
+    <div class="t4">题材复刻自 <a href="https://github.com/cl0nazepamm/sigils" target="_blank" rel="noopener">cl0nazepamm/sigils</a>(MIT),
+      经 threejs.cc 开源专题收录;本站为原创简化实现,几何 / 环境贴图 / UI 全部程序化生成。</div>
+    <button id="btn-start">开 始</button>
+  </div>
+</div>
+
+<!-- 帮助浮层 -->
+<div id="help" class="hidden">
+  <div class="card">
+    <div class="t1">操作说明</div>
+    <table class="keys">
+      <tr><td>左键拖动 / 触屏单指</td><td>画笔画(首尾相接自动闭合成环)</td></tr>
+      <tr><td>右键 / 中键拖动 · 触屏双指</td><td>旋转视角(双指捏合缩放)</td></tr>
+      <tr><td>滚轮</td><td>缩放</td></tr>
+      <tr><td>点一下笔画 / <b>Tab</b></td><td>选中笔画,可改宽、加镜像、删除</td></tr>
+      <tr><td><b>Ctrl/⌘+Z</b> · <b>Ctrl/⌘+Shift+Z</b> · <b>Ctrl/⌘+Y</b></td><td>撤销 · 重做</td></tr>
+      <tr><td><b>1–5</b></td><td>材质:镀铬 / 18K 金 / 玫瑰金 / 黑釉 / 幻彩</td></tr>
+      <tr><td><b>Q / W / E</b></td><td>环境:影棚 / 霓虹 / 落日</td></tr>
+      <tr><td><b>R</b> · <b>X</b> · <b>S</b> · <b>Del</b> · <b>H</b></td><td>随机符记 · 对称开关 · 保存 PNG · 删除选中 · 本说明</td></tr>
+    </table>
+    <div class="t4">小技巧:笔画越舒展,铬面反射越好看;把「笔画粗细」调大可以画充气气球字。</div>
+    <button id="help-close">知道了</button>
+  </div>
+</div>
+
+<!-- 顶部提示 toast -->
+<div id="toast"></div>
+<!-- 致命错误横幅 -->
+<div id="fatal" class="hidden"></div>
+
+<script src="vendor/three.min.js"></script>
+<script src="src/env.js"></script>
+<script src="src/geometry.js"></script>
+<script src="src/materials.js"></script>
+<script src="src/orbit.js"></script>
+<script src="src/model.js"></script>
+<script src="src/presets.js"></script>
+<script src="src/drawing.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+/* OPENHARD UNO R3 — 图纸风外观（米白图纸 + 深墨 + UNO teal + 橙点缀） */
+:root {
+  --cream: #e8e2d4;
+  --paper: #f4efe3;
+  --ink: #22242a;
+  --ink-soft: #6e6a5e;
+  --deep: #1d2026;
+  --panel: #20242b;
+  --panel-line: rgba(232, 226, 212, 0.82);
+  --teal: #00778b;
+  --teal-hi: #3fb2c4;
+  --orange: #d67f33;
+  --yellow: #e9c93c;
+  --green: #4caf6d;
+  --red: #cf5340;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: var(--mono);
+  background: radial-gradient(120% 130% at 22% 0%, #2b2d33 0%, #1c1e23 45%, #121317 100%);
+  overflow: hidden;
+  color: var(--ink);
+}
+
+#sheet {
+  position: absolute;
+  inset: 16px;
+  border-radius: 20px;
+  background: var(--cream);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+}
+#stage { position: absolute; inset: 0; }
+#stage canvas { display: block; }
+
+#frame-dashed {
+  position: absolute;
+  inset: 12px;
+  border: 1.5px dashed rgba(0, 119, 139, 0.6);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.card {
+  position: absolute;
+  z-index: 6;
+  background: var(--paper);
+  border: 1px solid rgba(34, 36, 42, 0.28);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(30, 24, 8, 0.18);
+  pointer-events: none;
+}
+#card-title {
+  top: 26px; left: 28px;
+  padding: 10px 14px 9px;
+  max-width: 480px;
+}
+#card-title .t1 { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; }
+#card-title .t1-en { font-size: 9px; color: var(--ink-soft); letter-spacing: 0.18em; margin-top: 2px; }
+#card-title .t2 { font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; }
+#card-title .t3 { font-size: 10px; color: #a29d8c; margin-top: 3px; }
+
+#card-status {
+  top: 26px; right: 28px;
+  width: 172px;
+  padding: 10px 14px 11px;
+}
+#card-status .k { font-size: 9.5px; color: var(--ink-soft); letter-spacing: 0.12em; }
+#card-status .mode {
+  font-size: 21px; font-weight: 800; letter-spacing: 0.05em;
+  margin: 1px 0 6px; min-height: 24px;
+}
+#card-status .mode.hot { color: var(--orange); }
+#card-status .mode.live { color: var(--teal); }
+#card-status .row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; margin-top: 2px;
+}
+#card-status .row b { font-size: 11.5px; }
+
+#phase-pill {
+  position: absolute;
+  left: 50%; bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--deep);
+  color: #f0ebdf;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(10, 12, 16, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+}
+#phase-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 6px currentColor;
+}
+#phase-dot.pink { background: var(--orange); }
+#phase-dot.green { background: var(--green); }
+#phase-dot.blue { background: #6a9bd8; }
+#phase-dot.teal { background: var(--teal-hi); }
+#phase-dot.yellow { background: var(--yellow); }
+#phase-dot.orange { background: var(--orange); }
+
+.corner {
+  position: absolute;
+  bottom: 20px;
+  z-index: 6;
+  font-size: 9.5px; letter-spacing: 0.14em;
+  color: rgba(34, 36, 42, 0.72);
+  background: rgba(244, 239, 227, 0.75);
+  padding: 3px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+#corner-left { left: 24px; }
+#corner-right { right: 24px; }
+
+/* ---------- 底部仪表盘 ---------- */
+#dash {
+  position: absolute;
+  left: 22px; right: 22px; bottom: 44px;
+  z-index: 5;
+  display: flex;
+  gap: 10px;
+  pointer-events: none;
+}
+.panel {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--panel);
+  border: 1.5px solid var(--panel-line);
+  border-radius: 12px;
+  color: #e8e4d8;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(8, 10, 14, 0.45);
+}
+.panel header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px 5px;
+  border-bottom: 1px solid rgba(232, 226, 212, 0.14);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em;
+}
+.panel header .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.panel header .meta { margin-left: auto; font-weight: 400; font-size: 8.5px; color: rgba(232, 228, 216, 0.55); letter-spacing: 0.08em; }
+.panel .body { padding: 7px 10px 8px; }
+
+.dot.teal { background: var(--teal-hi); }
+.dot.pink { background: var(--orange); }
+.dot.green { background: var(--green); }
+.dot.blue { background: #6a9bd8; }
+.dot.orange { background: var(--orange); }
+
+/* D13 方波 */
+#c-wave { width: 100%; height: 72px; display: block; border-radius: 4px; }
+.wave-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.wave-level { display: flex; align-items: center; gap: 5px; font-size: 9px; color: rgba(232,228,216,.7); }
+.wave-level i {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #3a3e46; transition: background .08s;
+}
+.wave-level i.on { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+.chip {
+  font-size: 7.5px; letter-spacing: .1em; padding: 1.5px 5px;
+  border: 1px solid rgba(232,228,216,.3); border-radius: 4px; color: rgba(232,228,216,.6);
+}
+.chip.on { border-color: var(--green); color: var(--green); }
+.chip.live { border-color: var(--teal-hi); color: var(--teal-hi); }
+.chip.hot { border-color: var(--orange); color: var(--orange); }
+
+/* 串口监视器 */
+#c-serial { width: 100%; height: 88px; display: block; border-radius: 4px; }
+.serial-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 8.5px; color: rgba(232,228,216,.6); }
+.serial-foot b { color: #e8e4d8; letter-spacing: .08em; }
+
+/* 电源轨 */
+.rail-row { display: flex; align-items: center; gap: 6px; font-size: 8.5px; margin: 4px 0; }
+.rail-row .name { width: 52px; color: rgba(232,228,216,.75); flex: none; }
+.rail-row .bar { flex: 1; height: 7px; background: rgba(232,228,216,.12); border-radius: 4px; overflow: hidden; }
+.rail-row .bar i { display: block; height: 100%; width: 0%; border-radius: 4px; transition: width .25s; }
+.rail-row .val { width: 52px; text-align: right; flex: none; color: #f0ebdf; }
+.rails-foot { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+.rails-foot .v { font-size: 21px; font-weight: 800; }
+.rails-foot .v small { font-size: 10px; font-weight: 400; color: rgba(232,228,216,.6); }
+.rails-foot .chip { margin-left: auto; }
+
+/* 时钟 / UART */
+.clk-main { font-size: 21px; font-weight: 800; line-height: 1; letter-spacing: .02em; }
+.clk-main small { font-size: 10px; font-weight: 400; color: rgba(232,228,216,.6); }
+.clk-rows { margin-top: 7px; display: flex; flex-direction: column; gap: 3px; }
+.clk-row { display: flex; justify-content: space-between; font-size: 9px; color: rgba(232,228,216,.75); }
+.clk-row b { color: #f0ebdf; letter-spacing: .06em; }
+.clk-leds { display: flex; gap: 10px; margin-top: 7px; }
+.clk-led { display: flex; align-items: center; gap: 5px; font-size: 9px; color: rgba(232,228,216,.7); }
+.clk-led i { width: 9px; height: 9px; border-radius: 2px; background: #3a3e46; }
+.clk-led i.on { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.clk-foot { display: flex; justify-content: space-between; margin-top: 7px; font-size: 8px; color: rgba(232,228,216,.55); }
+.clk-foot b { color: var(--yellow); }
+
+/* Flash 占用 */
+.flash-top { display: flex; justify-content: space-between; align-items: baseline; }
+.flash-sketch { font-size: 9px; letter-spacing: .1em; color: rgba(232,228,216,.75); }
+.flash-size { font-size: 17px; font-weight: 800; }
+.flash-size small { font-size: 9px; font-weight: 400; color: rgba(232,228,216,.6); }
+.flash-bar { margin-top: 6px; height: 9px; background: rgba(232,228,216,.12); border-radius: 5px; overflow: hidden; }
+.flash-bar i {
+  display: block; height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--teal-hi), var(--orange));
+  transition: width .3s; border-radius: 5px;
+}
+.flash-rows { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; }
+.flash-rows .r { display: flex; justify-content: space-between; font-size: 8px; color: rgba(232,228,216,.6); }
+.flash-rows .r b { color: #e8e4d8; }
+.flash-foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 8px; color: rgba(232,228,216,.55); }
+.flash-foot b { color: var(--yellow); font-weight: 700; }
+
+/* 零件标签 */
+#tags { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.tag {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--orange);
+  color: #17140a;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+  padding: 3px 8px 4px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(40, 24, 4, 0.35);
+}
+.tag .sub { display: block; font-size: 8px; font-weight: 600; opacity: 0.78; letter-spacing: 0.04em; }
+.tag.white { background: var(--paper); color: var(--ink); border: 1px solid rgba(34,36,42,.3); }
+.tag.teal { background: var(--teal); color: #f0ebdf; }
+.tag::after {
+  content: "";
+  position: absolute; left: 50%; top: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--orange);
+  border-bottom: none;
+}
+.tag.white::after { border-top-color: var(--paper); }
+.tag.teal::after { border-top-color: var(--teal); }
+
+/* 启动失败 */
+#boot-error {
+  position: absolute; z-index: 30;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: var(--paper);
+  border: 1.5px solid rgba(200, 60, 40, 0.7);
+  border-radius: 12px;
+  padding: 18px 22px;
+  max-width: 520px;
+  font-size: 12px;
+  color: #8c2f1e;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}
+#boot-error b { font-size: 14px; }
+#boot-error p { margin-top: 8px; line-height: 1.6; }
+#boot-error code { background: #efe8d6; padding: 1px 5px; border-radius: 4px; }
+
+@media (max-width: 1100px) {
+  #card-title .t3 { display: none; }
+  .panel header .meta { display: none; }
+}
+
+/* 双语排版保护：中文面板标题不折行，英文副位超长时省略号 */
+.panel header b { flex: none; white-space: nowrap; }
+.panel header .meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 干净录屏模式：D 键或 ?dash=0 隐藏仪表盘与底部角标 */
+body.no-dash #dash, body.no-dash #corner-left, body.no-dash #corner-right { display: none !important; }

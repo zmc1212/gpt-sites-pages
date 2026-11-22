@@ -1,0 +1,265 @@
+/* HELIODYNE AURORA-SW — 洁净间图纸风外观(浅灰蓝底 + 深墨字 + 金箔 + 翼深蓝) */
+:root {
+  --sheet: #dce3e8;
+  --paper: #f2f4f6;
+  --ink: #1e242b;
+  --ink-soft: #5f6a74;
+  --gold: #c9a227;
+  --navy: #1b2c6b;
+  --panel: #101a2e;
+  --panel-line: rgba(226, 232, 238, 0.85);
+  --pink: #d5487f;
+  --yellow: #d9b23a;
+  --teal: #58c2c2;
+  --green: #4fae6d;
+  --blue: #4a7fd6;
+  --orange: #e08a3a;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: var(--mono);
+  background: radial-gradient(120% 130% at 20% 0%, #aeb9c2 0%, #97a4ae 48%, #84909b 100%);
+  overflow: hidden;
+  color: var(--ink);
+}
+
+#sheet {
+  position: absolute;
+  inset: 16px;
+  border-radius: 20px;
+  background: var(--sheet);
+  box-shadow: 0 30px 80px rgba(10, 18, 26, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+}
+#stage { position: absolute; inset: 0; }
+#stage canvas { display: block; }
+
+#frame-dashed {
+  position: absolute;
+  inset: 12px;
+  border: 1.5px dashed rgba(201, 162, 39, 0.7);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.card {
+  position: absolute;
+  z-index: 6;
+  background: var(--paper);
+  border: 1px solid rgba(30, 36, 43, 0.28);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(24, 34, 44, 0.18);
+  pointer-events: none;
+}
+#card-title {
+  top: 26px; left: 28px;
+  padding: 10px 14px 9px;
+  max-width: 500px;
+}
+#card-title .t1 { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; }
+#card-title .t2 { font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; }
+#card-title .t3 { font-size: 10px; color: #97a1ab; margin-top: 3px; }
+
+#card-status {
+  top: 26px; right: 28px;
+  width: 172px;
+  padding: 10px 14px 11px;
+}
+#card-status .k { font-size: 9.5px; color: var(--ink-soft); letter-spacing: 0.12em; }
+#card-status .mode {
+  font-size: 19px; font-weight: 800; letter-spacing: 0.05em;
+  margin: 1px 0 6px; min-height: 22px;
+}
+#card-status .mode.gold { color: var(--gold); }
+#card-status .mode.lock { color: var(--pink); }
+#card-status .row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; margin-top: 2px;
+}
+#card-status .row b { font-size: 11.5px; }
+
+#phase-pill {
+  position: absolute;
+  left: 50%; bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--navy);
+  color: #eef1f6;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(10, 16, 30, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+}
+#phase-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 6px currentColor;
+}
+#phase-dot.pink { background: var(--pink); }
+#phase-dot.green { background: var(--green); }
+#phase-dot.blue { background: var(--blue); }
+#phase-dot.teal { background: var(--teal); }
+#phase-dot.gold { background: var(--gold); }
+#phase-dot.orange { background: var(--orange); }
+
+.corner {
+  position: absolute;
+  bottom: 20px;
+  z-index: 6;
+  font-size: 9.5px; letter-spacing: 0.14em;
+  color: rgba(30, 36, 43, 0.72);
+  background: rgba(242, 244, 246, 0.78);
+  padding: 3px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+#corner-left { left: 24px; }
+#corner-right { right: 24px; }
+
+/* ---------- 底部仪表盘 ---------- */
+#dash {
+  position: absolute;
+  left: 22px; right: 22px; bottom: 44px;
+  z-index: 5;
+  display: flex;
+  gap: 10px;
+  pointer-events: none;
+}
+.panel {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--panel);
+  border: 1.5px solid var(--panel-line);
+  border-radius: 12px;
+  color: #e4e9ee;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(8, 14, 26, 0.45);
+}
+.panel header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px 5px;
+  border-bottom: 1px solid rgba(226, 232, 238, 0.14);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em;
+}
+.panel header .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.panel header .meta { margin-left: auto; font-weight: 400; font-size: 8.5px; color: rgba(228, 233, 238, 0.55); letter-spacing: 0.08em; }
+.panel .body { padding: 7px 10px 8px; }
+
+.dot.gold { background: var(--gold); }
+.dot.teal { background: var(--teal); }
+.dot.pink { background: var(--pink); }
+.dot.green { background: var(--green); }
+.dot.blue { background: var(--blue); }
+.dot.orange { background: var(--orange); }
+
+/* 母线电源 */
+.bigv { display: flex; align-items: baseline; gap: 6px; }
+.bigv .v { font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; }
+.bigv .v small { font-size: 11px; font-weight: 500; color: rgba(228, 233, 238, 0.6); }
+.bus-row { display: flex; align-items: center; gap: 7px; margin-top: 5px; font-size: 8.5px; color: rgba(228, 233, 238, 0.7); }
+.bus-row .bar { flex: 1; height: 7px; background: rgba(228, 233, 238, 0.12); border-radius: 4px; overflow: hidden; }
+.bus-row .bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--teal), var(--gold)); transition: width 0.25s; border-radius: 4px; }
+.bus-row .amp { width: 52px; text-align: right; flex: none; color: #eef1f6; font-weight: 700; }
+.chips { display: flex; gap: 4px; margin-top: 6px; }
+.chip {
+  font-size: 7.5px; letter-spacing: 0.1em; padding: 1.5px 5px;
+  border: 1px solid rgba(228, 233, 238, 0.3); border-radius: 4px; color: rgba(228, 233, 238, 0.6);
+}
+.chip.on { border-color: var(--green); color: var(--green); }
+.chip.arm { border-color: var(--orange); color: var(--orange); }
+.chip.fire { border-color: #ff5340; color: #ff6a55; }
+.chip.gold { border-color: var(--gold); color: var(--gold); }
+
+/* 太阳翼功率 */
+#c-arr { width: 100%; height: 62px; display: block; border-radius: 4px; }
+.arr-foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
+.arr-foot .cap { font-size: 8px; color: rgba(228, 233, 238, 0.5); letter-spacing: 0.08em; }
+.arr-foot .chip { margin-left: auto; }
+
+/* 姿态 ADCS */
+#p-adcs .body { display: flex; gap: 10px; }
+.qcol { flex: 1.1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.qrow { display: flex; justify-content: space-between; font-size: 9px; color: rgba(228, 233, 238, 0.72); }
+.qrow b { color: #eef1f6; font-weight: 700; }
+.omega { margin-top: auto; font-size: 8px; color: rgba(228, 233, 238, 0.6); letter-spacing: 0.08em; }
+.omega b { font-size: 13px; color: var(--teal); }
+.wheels { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.wheels .k { font-size: 8px; color: rgba(228, 233, 238, 0.55); letter-spacing: 0.1em; }
+.wbar { display: flex; align-items: center; gap: 5px; font-size: 8px; }
+.wbar .name { width: 22px; color: rgba(228, 233, 238, 0.7); flex: none; }
+.wbar .bar { flex: 1; height: 6px; background: rgba(228, 233, 238, 0.12); border-radius: 3px; overflow: hidden; }
+.wbar .bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--teal)); transition: width 0.3s; }
+.wbar .rpm { width: 44px; text-align: right; flex: none; color: #eef1f6; }
+
+/* 热控 */
+.therm { display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
+.trow { display: flex; align-items: center; gap: 6px; font-size: 8.5px; }
+.trow .name { width: 58px; color: rgba(228, 233, 238, 0.75); flex: none; }
+.trow .bar { flex: 1; height: 9px; background: rgba(228, 233, 238, 0.1); border-radius: 5px; overflow: hidden; position: relative; }
+.trow .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: linear-gradient(90deg, #3f6cc4, #58c2c2 55%, #e0b23a 78%, #e05a3a); border-radius: 5px; transition: width 0.4s; }
+.trow .val { width: 56px; text-align: right; flex: none; color: #eef1f6; font-weight: 700; }
+.therm-cap { display: flex; justify-content: space-between; font-size: 7.5px; color: rgba(228, 233, 238, 0.45); margin-top: 4px; letter-spacing: 0.06em; }
+
+/* 展开角度计 */
+.dep-row { display: flex; align-items: center; gap: 6px; font-size: 8.5px; margin: 4px 0; }
+.dep-row .name { width: 40px; color: rgba(228, 233, 238, 0.75); flex: none; }
+.dep-row .bar { flex: 1; height: 9px; background: rgba(228, 233, 238, 0.12); border-radius: 5px; overflow: hidden; }
+.dep-row .bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--navy), var(--gold)); transition: width 0.2s; border-radius: 5px; }
+.dep-row .deg { width: 46px; text-align: right; flex: none; color: #eef1f6; font-weight: 700; }
+.dep-foot { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
+.dep-foot .seq { margin-left: auto; font-size: 8px; color: rgba(228, 233, 238, 0.55); letter-spacing: 0.1em; }
+
+/* 零件标签 */
+#tags { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.tag {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--gold);
+  color: #1c1503;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+  padding: 3px 8px 4px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(46, 34, 4, 0.35);
+}
+.tag .sub { display: block; font-size: 8px; font-weight: 600; opacity: 0.78; letter-spacing: 0.04em; }
+.tag.white { background: var(--paper); color: var(--ink); border: 1px solid rgba(30, 36, 43, 0.3); }
+.tag.navy { background: var(--navy); color: #eef1f6; }
+.tag::after {
+  content: "";
+  position: absolute; left: 50%; top: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--gold);
+  border-bottom: none;
+}
+.tag.white::after { border-top-color: var(--paper); }
+.tag.navy::after { border-top-color: var(--navy); }
+
+/* 启动失败 */
+#boot-error {
+  position: absolute; z-index: 30;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: var(--paper);
+  border: 1.5px solid rgba(200, 60, 40, 0.7);
+  border-radius: 12px;
+  padding: 18px 22px;
+  max-width: 520px;
+  font-size: 12px;
+  color: #8c2f1e;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+#boot-error b { font-size: 14px; }
+#boot-error p { margin-top: 8px; line-height: 1.6; }
+#boot-error code { background: #e6e2d4; padding: 1px 5px; border-radius: 4px; }
+
+@media (max-width: 1100px) {
+  #card-title .t3 { display: none; }
+  .panel header .meta { display: none; }
+}

@@ -1,0 +1,240 @@
+/* IRONLINE SB-350 — 深灰图纸风外观(白字 + 雪佛兰橙) */
+:root {
+  --paper: #2B2E33;
+  --ink: #E6E6E4;
+  --ink-soft: #9A9DA3;
+  --orange: #E8611C;
+  --panel: #1B1D21;
+  --panel-line: rgba(230, 230, 228, 0.22);
+  --gold: #E5B84B;
+  --teal: #7FD0C8;
+  --green: #6FBF73;
+  --red: #D6543A;
+  --silver: #B8BCC2;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: var(--mono);
+  background: radial-gradient(120% 130% at 22% 0%, #31343A 0%, #26282C 48%, #1B1D20 100%);
+  overflow: hidden;
+  color: var(--ink);
+}
+
+#sheet {
+  position: absolute;
+  inset: 16px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #2E3136 0%, #26282C 55%, #232529 100%);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+#stage { position: absolute; inset: 0; }
+#stage canvas { display: block; }
+
+#frame-dashed {
+  position: absolute;
+  inset: 12px;
+  border: 1.5px dashed rgba(232, 97, 28, 0.6);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.card {
+  position: absolute;
+  z-index: 6;
+  background: rgba(24, 26, 29, 0.9);
+  border: 1px solid rgba(230, 228, 220, 0.26);
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+#card-title {
+  top: 26px; left: 28px;
+  padding: 10px 14px 9px;
+  max-width: 500px;
+}
+#card-title .t1 { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--ink); }
+#card-title .t2 { font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; }
+#card-title .t2 b { color: var(--orange); font-weight: 700; }
+#card-title .t3 { font-size: 10px; color: #6E7176; margin-top: 3px; }
+
+#card-status {
+  top: 26px; right: 28px;
+  width: 172px;
+  padding: 10px 14px 11px;
+}
+#card-status .k { font-size: 9.5px; color: var(--ink-soft); letter-spacing: 0.12em; }
+#card-status .mode {
+  font-size: 20px; font-weight: 800; letter-spacing: 0.05em;
+  margin: 1px 0 6px; min-height: 24px;
+  color: var(--ink);
+}
+#card-status .mode.idle { color: var(--orange); }
+#card-status .row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; margin-top: 2px;
+}
+#card-status .row b { font-size: 11.5px; color: var(--ink); }
+
+#phase-pill {
+  position: absolute;
+  left: 50%; bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(16, 17, 19, 0.92);
+  border: 1px solid rgba(232, 97, 28, 0.4);
+  color: #EDECE8;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  white-space: nowrap;
+}
+#phase-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px currentColor;
+}
+#phase-dot.gold { background: var(--gold); }
+#phase-dot.orange { background: var(--orange); }
+#phase-dot.silver { background: var(--silver); }
+#phase-dot.teal { background: var(--teal); }
+#phase-dot.red { background: var(--red); }
+#phase-dot.green { background: var(--green); }
+
+.corner {
+  position: absolute;
+  bottom: 20px;
+  z-index: 6;
+  font-size: 9.5px; letter-spacing: 0.14em;
+  color: rgba(230, 228, 220, 0.72);
+  background: rgba(20, 22, 25, 0.8);
+  border: 1px solid rgba(230, 228, 220, 0.14);
+  padding: 3px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+#corner-left { left: 24px; }
+#corner-right { right: 24px; }
+
+/* ---------- 底部仪表盘 ---------- */
+#dash {
+  position: absolute;
+  left: 22px; right: 22px; bottom: 44px;
+  z-index: 5;
+  display: flex;
+  gap: 10px;
+  pointer-events: none;
+}
+.panel {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--panel);
+  border: 1.5px solid var(--panel-line);
+  border-radius: 12px;
+  color: #E6E4DC;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.panel header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px 5px;
+  border-bottom: 1px solid rgba(230, 230, 228, 0.12);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em;
+}
+.panel header .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.panel header .meta { margin-left: auto; font-weight: 400; font-size: 8.5px; color: rgba(230, 230, 228, 0.5); letter-spacing: 0.08em; }
+.panel .body { padding: 6px 10px 8px; }
+
+.dot.orange { background: var(--orange); }
+.dot.gold { background: var(--gold); }
+.dot.silver { background: var(--silver); }
+.dot.teal { background: var(--teal); }
+.dot.red { background: var(--red); }
+.dot.green { background: var(--green); }
+
+.panel canvas { width: 100%; display: block; border-radius: 4px; }
+.axis { display: flex; justify-content: space-between; font-size: 8px; color: rgba(230, 228, 220, 0.45); margin-top: 3px; letter-spacing: 0.06em; }
+
+/* 转速表 */
+#c-tach { height: 84px; }
+.tach-foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px; }
+.tach-foot .v { font-size: 19px; font-weight: 800; line-height: 1; color: var(--ink); }
+.tach-foot .v small { font-size: 9px; font-weight: 400; color: rgba(230, 230, 228, 0.55); }
+.tach-foot .redline { font-size: 8px; color: var(--red); letter-spacing: 0.1em; }
+
+/* 点火顺序 */
+#c-fire { height: 84px; }
+
+/* 气门升程 */
+#c-valve { height: 84px; }
+
+/* 油压 / 水温 */
+.fluid-row { display: flex; align-items: center; gap: 6px; font-size: 8.5px; margin: 6px 0 4px; color: rgba(230, 230, 228, 0.72); }
+.fluid-row .k { width: 34px; flex: none; letter-spacing: 0.08em; }
+.fluid-row .bar { flex: 1; height: 8px; background: rgba(230, 230, 228, 0.1); border-radius: 4px; overflow: hidden; }
+.fluid-row .bar i { display: block; height: 100%; width: 0%; border-radius: 4px; transition: width 0.25s; }
+.fluid-row .val { width: 64px; text-align: right; flex: none; color: var(--ink); font-size: 10.5px; font-weight: 700; }
+.fluid-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+.chip {
+  font-size: 7.5px; letter-spacing: 0.1em; padding: 1.5px 6px;
+  border: 1px solid rgba(230, 230, 228, 0.28); border-radius: 4px; color: rgba(230, 230, 228, 0.55);
+}
+.chip.on { border-color: var(--green); color: var(--green); }
+.chip.hot { border-color: var(--orange); color: var(--orange); }
+#run-time { font-size: 8.5px; color: rgba(230, 230, 228, 0.55); letter-spacing: 0.08em; }
+
+/* 活塞相位 */
+#c-pist { height: 84px; }
+
+/* 零件标签 */
+#tags { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.tag {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--orange);
+  color: #17110B;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+  padding: 3px 8px 4px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(120, 45, 8, 0.5);
+}
+.tag .sub { display: block; font-size: 8px; font-weight: 600; opacity: 0.78; letter-spacing: 0.04em; }
+.tag.white { background: #E9E7E0; color: #232529; border: 1px solid rgba(35, 37, 41, 0.3); }
+.tag::after {
+  content: "";
+  position: absolute; left: 50%; top: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--orange);
+  border-bottom: none;
+}
+.tag.white::after { border-top-color: #E9E7E0; }
+
+/* 启动失败 */
+#boot-error {
+  position: absolute; z-index: 30;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: #232529;
+  border: 1.5px solid rgba(214, 84, 58, 0.75);
+  border-radius: 12px;
+  padding: 18px 22px;
+  max-width: 520px;
+  font-size: 12px;
+  color: #E8A08C;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+#boot-error b { font-size: 14px; color: var(--ink); }
+#boot-error p { margin-top: 8px; line-height: 1.6; }
+#boot-error code { background: #17181B; padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+@media (max-width: 1100px) {
+  #card-title .t3 { display: none; }
+  .panel header .meta { display: none; }
+}

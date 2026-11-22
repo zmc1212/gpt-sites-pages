@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>克拉尼声振图案 — Chladni Cymatics 题材复刻</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div id="stage"></div>
+<div id="vignette"></div>
+
+<!-- 左上标题卡 -->
+<div id="card-title" class="card">
+  <div class="t1">克拉尼声振图案<span class="en">CHLADNI CYMATICS</span></div>
+  <div class="t2">题材复刻自 ekimroyrp/260610_ChladniCymatics(MIT)——方形金属板以选定频率振动,
+    沙粒离开振幅大的<b>波腹</b>、滞留在振幅为零的<b>节线</b>上,聚成随频率连续变形的对称花纹。</div>
+  <div class="t3">拖动旋钮变频率 · 拖动旋转视角 · 滚轮缩放 · 空格发声 · S 扫频 · G 热图 · H 帮助</div>
+</div>
+
+<!-- 底部控制台 -->
+<div id="console" class="card">
+  <div class="row">
+    <div id="freq-read"><span id="freq-val">2346</span><small>Hz</small></div>
+    <div class="chip"><span class="k">音名</span><b id="note-val">—</b></div>
+    <div class="chip"><span class="k">模式</span><b id="mode-val">(1,2)→(1,3)</b>
+      <span id="mode-bar"><span id="mode-fill"></span></span><b id="mode-pct">0%</b></div>
+    <div class="chip"><span class="k">沙粒</span><b id="sand-val">3.0万</b></div>
+  </div>
+  <div class="row">
+    <input id="freq-slider" type="range" min="345" max="5865" step="1" value="2346">
+  </div>
+  <div class="row" id="preset-row">
+    <span class="chip" style="border:none;background:none;padding:5px 0"><span class="k">预设</span></span>
+    <!-- 预设按钮由 main.js 生成 -->
+    <span class="sep"></span>
+    <button id="btn-sweep" class="btn">⟳ 扫频<span class="key">S</span></button>
+    <button id="btn-heat" class="btn">◉ 振幅热图<span class="key">G</span></button>
+    <button id="btn-sound" class="btn">♪ 发声<span class="key">空格</span></button>
+    <button id="btn-quality" class="btn">粒子 · 中<span class="key">Q</span></button>
+    <button id="btn-help" class="btn">? 帮助<span class="key">H</span></button>
+  </div>
+</div>
+
+<!-- 帮助面板 -->
+<div id="help-overlay" class="hidden">
+  <div id="help-panel">
+    <h2>克拉尼图形 — 沙为何聚成花纹?</h2>
+    <p>金属板被驱动到某一频率振动时,板面上每个点的振幅并不相同:<b>波腹</b>处振动剧烈,
+       <b>节线</b>处几乎静止。撒在板上的沙被剧烈振动的波腹不断弹起、随机游走,
+       只有落到节线上才能安顿下来——于是沙粒自动"画"出板面的等振幅为零线,即<b>克拉尼图形</b>。</p>
+    <h3>本站的模拟方式</h3>
+    <p>方形薄板的共振模式记作 (m,n),板形函数 f = cos(πm·u)·cos(πn·v) − cos(πn·u)·cos(πm·v)。
+       薄板弯曲共振频率近似正比于 m²+n²。旋钮停在任意频率时,本站在相邻两个共振模式之间对 (m,n)
+       做<b>连续插值</b>,因此花纹随频率连续变形、永不断裂;每个整数 (m,n) 处正好是纯共振,
+       振幅包络最强、沙粒"起舞"最欢。</p>
+    <p>每粒沙按加速度 −G·f·∇f 沿 |f| 下坡滑向节线,抖动幅度与所在点振幅成正比——
+       与真实沙盘的行为一致。30,000 粒沙全部在 CPU 上逐帧积分,无 GPU 计算依赖。</p>
+    <h3>操作</h3>
+    <table id="help-table">
+      <tr><td>拖动旋钮 / 预设</td><td>改变驱动频率,花纹随之连续变形</td></tr>
+      <tr><td>← / →</td><td>微调频率(Shift ×8 步长)</td></tr>
+      <tr><td>⟳ 扫频(S)</td><td>在 345–5865 Hz 间缓慢往返,看图案流动演化</td></tr>
+      <tr><td>◉ 振幅热图(G)</td><td>在板面叠加能量分布:暗处为节线,亮处为波腹</td></tr>
+      <tr><td>♪ 发声(空格 / M)</td><td>WebAudio 以同频正弦波播放板频音调</td></tr>
+      <tr><td>粒子(Q)</td><td>沙粒数量 低 / 中 / 高(1.2 / 3.0 / 6.0 万)</td></tr>
+      <tr><td>拖动 / 滚轮</td><td>旋转视角 / 缩放</td></tr>
+      <tr><td>H / Esc</td><td>打开 / 关闭本帮助</td></tr>
+    </table>
+    <button id="help-close" class="btn">关闭(Esc)</button>
+    <div id="help-credit">题材复刻自 threejs.cc 开源专题收录的 ekimroyrp/260610_ChladniCymatics(MIT);
+      本站为其原创简化实现,未复制上游源码。原作:https://github.com/ekimroyrp/260610_ChladniCymatics</div>
+  </div>
+</div>
+
+<!-- 开始遮罩 -->
+<div id="start-overlay">
+  <div id="start-card">
+    <h1>克拉尼声振图案</h1>
+    <div class="sub">CHLADNI CYMATICS · 沙粒共振</div>
+    <p>3 万颗沙粒洒在振动的方形金属板上:板一"唱",沙便自动流向<b>节线</b>,
+       聚成对称的几何花纹。转动频率旋钮,花纹<b>连续变形</b>——345 到 5865 Hz,
+       每个频率都是一幅独一无二的共振图案。</p>
+    <p>点开<b>扫频</b>看图案流动,或用<b>振幅热图</b>揭开"沙为何聚在那里"。</p>
+    <label class="start-opt"><input type="checkbox" id="opt-sound" checked> 开始时播放板频音调(音量很低,空格可静音)</label>
+    <br>
+    <button id="start-btn">开 始</button>
+    <div id="start-credit">题材复刻 · ekimroyrp/260610_ChladniCymatics(MIT)· 原创简化实现<br>
+      three.js r149 · 零构建 · file:// 双击可用</div>
+  </div>
+</div>
+
+<!-- 致命错误横幅(脚本失败时由 JS 填充显示) -->
+<div id="fatal" class="hidden"></div>
+
+<div class="corner left">GPT-SITES · 题材复刻系列</div>
+<div class="corner right">CHLADNI CYMATICS REPLICA · MIT</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="src/modes.js"></script>
+<script src="src/sand.js"></script>
+<script src="src/scene.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>词语筑成的街 — 复刻试作</title>
+<meta name="description" content="受みちよみ《言葉がつくる街》启发的全中文原创复刻：东京都心的建筑与道路（OSM 实测轮廓）上，写满自生成的中文街景词。街区可漫游，建筑与道路可点按。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2304060a'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='%23f2c27f' font-family='serif'%3E词%3C/text%3E%3C/svg%3E">
+<script type="importmap">
+{"imports":{"three":"./vendor/three.module.js"}}
+</script>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body class="view">
+<div id="stage" aria-hidden="true"></div>
+
+<div id="loading" role="status">
+  <div class="in">
+    <div class="kick">OSM × 自生成词 — 东京都心</div>
+    <h1>词语筑成的街</h1>
+    <div id="loadMsg">正在打开…</div>
+  </div>
+</div>
+
+<header id="top">
+  <div class="tools">
+    <a id="showBtn" href="?show=1">▶ 看演出<span class="dur">（约 40 秒）</span></a>
+    <a class="opt" id="creditLink" href="#credit">数据与出处</a>
+  </div>
+</header>
+
+<section id="panel" aria-label="选街区、找词、换看法">
+  <div class="p-head">
+    <div class="t">
+      <div class="kick">原创复刻 · 灵感来自みちよみ《言葉がつくる街》</div>
+      <h1><a href="./">词语筑成的街</a></h1>
+    </div>
+    <button id="foldBtn" type="button" aria-expanded="true" aria-controls="pBody" aria-label="收起面板">▲</button>
+  </div>
+  <div class="p-body" id="pBody">
+    <p class="lead">东京都心的楼与路（OSM 实测轮廓）被写上了中文街景词。选个街区逛一逛，走动时旁边的区块会接着加载。</p>
+    <p class="hint">拖动旋转 · 右键或双指平移 · 滚轮缩放 · 双击凑近楼。点建筑和道路，看挂在上面的词。</p>
+    <div class="p-stats"><div id="stats"></div></div>
+    <div>
+      <p class="p-h">选街区</p>
+      <select id="town" aria-label="选街区"></select>
+      <div class="here"><span id="here"></span><span id="tstat"></span></div>
+    </div>
+    <div>
+      <p class="p-h">按词找（已加载的范围）</p>
+      <form id="qForm" role="search">
+        <input id="q" type="search" placeholder="例：台阶、自动贩卖机、瓷砖" aria-label="按词找" autocomplete="off">
+        <button type="submit">找</button>
+      </form>
+      <div id="qEx"><button type="button">台阶</button><button type="button">自动贩卖机</button><button type="button">盲道</button><button type="button">瓷砖</button><button type="button">施工</button></div>
+      <div id="results" aria-live="polite"></div>
+    </div>
+    <div>
+      <p class="p-h">意义层（按下收起/展开）</p>
+      <div id="cats"></div>
+    </div>
+    <div>
+      <p class="p-h">街的形</p>
+      <div class="row">
+        <div id="look" role="group" aria-label="街的形">
+          <button type="button" data-look="words" aria-pressed="true">词之街</button>
+          <button type="button" data-look="material" aria-pressed="false">材质之城</button>
+        </div>
+        <button id="layerBtn" class="vbtn" type="button" aria-pressed="false">分层看</button>
+        <button id="readBtn" class="vbtn" type="button" aria-pressed="false">俯瞰读<small>试验</small></button>
+      </div>
+      <p id="modeNote" class="hint" aria-live="polite"></p>
+    </div>
+    <p class="p-links"><a id="creditLink2" href="#credit">数据与出处</a><a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap ↗</a></p>
+  </div>
+</section>
+
+<div id="tip" hidden></div>
+<div id="layers" aria-hidden="true"></div>
+
+<aside id="drawer" aria-hidden="true" aria-labelledby="dTitle">
+  <div class="d-head">
+    <div class="t"><span id="dKind"></span><b id="dTitle"></b><span id="dSub"></span></div>
+    <button id="dClose" type="button" aria-label="关闭">✕</button>
+  </div>
+  <div id="dBody"></div>
+</aside>
+
+<details id="credit">
+  <summary><span class="credit-line">地理数据 © OpenStreetMap 贡献者（ODbL 1.0）· 灵感与致谢：みちよみ《言葉がつくる街》（本站为其概念的原创复刻试作）· 词与描写句：本站自写 · 纹理：程序化生成</span></summary>
+  <p class="credit-body">
+    地理数据：<a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap 贡献者</a>（ODbL 1.0），建筑轮廓/路网/水面经本地脚本简化加工 ·
+    概念致敬：<a href="https://michiyomi.dev/3d/" rel="noopener">みちよみ《言葉がつくる街》</a>——原站以 PLATEAU 三维模型与 Mapillary 街拍 AI 言语化实现；本站是同一概念的原创实现，未使用其数据与代码 ·
+    词与描写句：本站原创生成 · 纹理：Canvas 程序化生成 · 引擎：Three.js（MIT）
+  </p>
+</details>
+
+<p class="sr" id="live" role="status" aria-live="polite"></p>
+<noscript><p style="position:fixed;inset:0;display:grid;place-items:center;z-index:70;background:#04060a">需要开启 JavaScript 才能走进这条街。</p></noscript>
+
+<script>
+// 全局错误陷阱（开发期诊断用）
+window.__errs = [];
+addEventListener('error', (e) => window.__errs.push(`[err] ${e.message} @ ${(e.filename || '').split('/').pop()}:${e.lineno}`));
+addEventListener('unhandledrejection', (e) => window.__errs.push(`[rej] ${e.reason && e.reason.message || e.reason}`));
+</script>
+<script>
+// file:// 下浏览器会拦 ES 模块 —— 改走随仓库交付的 IIFE 产物 local.bundle.js。
+// 装载失败时给出可操作的提示，而不是停在「正在打开…」。
+(() => {
+  const loadMsg = document.getElementById('loadMsg');
+  const first = loadMsg.textContent;
+  const inject = (src, isModule) => {
+    const s = document.createElement('script');
+    if (isModule) s.type = 'module';
+    s.src = src;
+    s.onerror = () => {
+      if (loadMsg.textContent !== first) return;
+      loadMsg.classList.add('err');
+      loadMsg.innerHTML = (location.protocol === 'file:'
+        ? '没找到 local.bundle.js —— 在项目根目录跑 <b>npm run build:local</b> 生成后再双击打开。'
+        : '脚本加载失败 —— 检查网络面板里的 <b>' + src + '</b>。')
+        + '<br><button type="button" class="more-btn" id="loadRetry">再试一次</button>';
+      document.getElementById('loadRetry').onclick = () => location.reload();
+    };
+    document.body.append(s);
+  };
+  if (location.protocol === 'file:') inject('./js/local.bundle.js', false);
+  else inject('./js/main.js', true);
+})();
+</script>
+</body>
+</html>

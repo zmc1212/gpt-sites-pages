@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>八足游蛛 · Procedural Spider — 解析 IK 步态复刻</title>
+<meta name="description" content="程序化八足蜘蛛：闭式两骨 IK、即兴步态、支撑面贴合——爬坡上墙，无动画片段无物理引擎，每帧纯数学。题材复刻自 majidmanzarpour/threejs-procedural-spider (MIT)。">
+<style>
+  :root {
+    --cyan: #22d3ee; --pink: #ff3bd4; --ink: rgba(8, 14, 22, .78);
+    --line: rgba(34, 211, 238, .28); --txt: #cfe3ea;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #060a10; }
+  body { font: 13px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans SC", "PingFang SC", sans-serif; color: var(--txt); }
+  #app, #app canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #app canvas { touch-action: none; }
+
+  .glass {
+    background: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, .45);
+  }
+
+  /* ---- 标题卡 ---- */
+  #titleCard { position: absolute; top: 14px; left: 14px; padding: 12px 16px 11px; max-width: 340px; z-index: 20; cursor: pointer; user-select: none; }
+  #titleCard h1 { font-size: 17px; letter-spacing: .5px; color: #eef7fa; font-weight: 700; }
+  #titleCard h1 b { color: var(--cyan); font-weight: 700; }
+  #titleCard .brand { font-size: 10px; letter-spacing: 1.5px; color: rgba(207, 227, 234, .55); margin-top: 3px; }
+  #titleCard .desc { font-size: 11.5px; color: rgba(207, 227, 234, .78); margin-top: 7px; line-height: 1.55; }
+  #titleCard .desc a { color: var(--cyan); text-decoration: none; }
+  #titleCard.folded .desc, #titleCard.folded .brand { display: none; }
+
+  /* ---- HUD ---- */
+  #hud { position: absolute; top: 14px; right: 14px; padding: 10px 14px; z-index: 20; min-width: 148px; }
+  #hud .row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; }
+  #hud .row + .row { margin-top: 4px; }
+  #hud .k { color: rgba(207, 227, 234, .55); letter-spacing: 1px; }
+  #hud .v { color: #eef7fa; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #grade.wall { color: var(--pink) !important; }
+
+  /* ---- 调参面板 ---- */
+  #panel { position: absolute; top: 118px; left: 14px; width: 250px; z-index: 20; overflow: hidden; }
+  #panelHead { display: flex; align-items: center; justify-content: space-between; padding: 9px 13px; cursor: pointer; user-select: none; letter-spacing: 2px; font-size: 12px; color: #eef7fa; }
+  #panelHead span { color: rgba(207, 227, 234, .5); }
+  #panelTog { color: var(--cyan); font-weight: 700; }
+  #panelBody { padding: 2px 13px 11px; max-height: 62vh; overflow-y: auto; }
+  #panel.closed #panelBody { display: none; }
+  .tog, .sld { padding: 6px 0; border-top: 1px solid rgba(34, 211, 238, .12); }
+  .tog { display: flex; justify-content: space-between; cursor: pointer; font-size: 12px; }
+  .tog span { color: rgba(207, 227, 234, .72); }
+  .tog b { color: rgba(207, 227, 234, .45); font-weight: 700; letter-spacing: 1px; }
+  .tog.on b { color: var(--cyan); }
+  .sld { display: block; }
+  .sld label { display: flex; justify-content: space-between; font-size: 12px; color: rgba(207, 227, 234, .72); }
+  .sld label b { color: var(--cyan); font-variant-numeric: tabular-nums; }
+  .sld input[type=range] { width: 100%; margin-top: 5px; height: 18px; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+  .sld input[type=range]::-webkit-slider-runnable-track { height: 3px; background: rgba(34, 211, 238, .3); border-radius: 2px; }
+  .sld input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -4.5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(34, 211, 238, .8); }
+  .sld input[type=range]::-moz-range-track { height: 3px; background: rgba(34, 211, 238, .3); border-radius: 2px; }
+  .sld input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: var(--cyan); }
+  #panelBtns { display: flex; gap: 8px; padding: 9px 0 4px; border-top: 1px solid rgba(34, 211, 238, .12); }
+  #panelBtns button {
+    flex: 1; padding: 6px 0; font: inherit; font-size: 12px; color: var(--txt);
+    background: rgba(34, 211, 238, .1); border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+  }
+  #panelBtns button:hover { background: rgba(34, 211, 238, .22); color: #fff; }
+
+  /* ---- 底部提示 / 触控 ---- */
+  #hint { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); padding: 7px 16px; font-size: 11px; letter-spacing: 1px; color: rgba(207, 227, 234, .6); z-index: 20; white-space: nowrap; }
+  #hint b { color: var(--cyan); font-weight: 600; }
+  #joy, #btnJump { position: absolute; z-index: 20; display: none; }
+  #joy { width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 50%; border: 1px solid var(--line); background: rgba(8, 14, 22, .4); touch-action: none; pointer-events: none; }
+  #joy i { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(34, 211, 238, .35); border: 1px solid var(--cyan); }
+  #btnJump { right: 26px; bottom: 116px; width: 76px; height: 76px; border-radius: 50%; font: inherit; font-size: 13px; letter-spacing: 2px; color: var(--txt); background: rgba(8, 14, 22, .5); border: 1px solid var(--line); }
+  body.touch #btnJump { display: block; }
+  body.touch #hint { display: none; }
+
+  /* ---- 错误横幅 ---- */
+  #err { position: absolute; inset: auto 14px 50px 14px; display: none; z-index: 40; padding: 14px 18px; font-size: 13px; line-height: 1.7; color: #ffd7e8; border-color: rgba(255, 59, 212, .4); white-space: pre-wrap; }
+
+  /* ---- 自检报告 ---- */
+  #selftest { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 30; max-width: 560px; width: calc(100% - 28px); display: none; padding: 12px 16px; font-size: 12px; }
+  #selftest h2 { font-size: 13px; letter-spacing: 2px; margin-bottom: 8px; color: #eef7fa; }
+  #selftest h2 b { color: var(--cyan); }
+  #selftest h2 b.bad { color: var(--pink); }
+  #selftest ul { list-style: none; }
+  #selftest li { display: flex; gap: 10px; padding: 2.5px 0; color: rgba(207, 227, 234, .8); }
+  #selftest li .ok { color: #34d97f; font-weight: 700; }
+  #selftest li .no { color: var(--pink); font-weight: 700; }
+  #selftest li .d { color: rgba(207, 227, 234, .5); }
+  #selftest .close { margin-top: 9px; font: inherit; font-size: 12px; color: var(--cyan); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 14px; cursor: pointer; }
+
+  @media (max-width: 760px) {
+    #titleCard { max-width: 250px; padding: 10px 12px; }
+    #titleCard h1 { font-size: 14px; }
+    #panel { width: 216px; top: 96px; }
+    #hud { min-width: 120px; padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="titleCard" class="glass">
+  <h1>八足游蛛 <b>· 解析 IK 步态</b></h1>
+  <div class="brand">PROCEDURAL SPIDER · 题材复刻自 majidmanzarpour/threejs-procedural-spider (MIT)</div>
+  <div class="desc">
+    八足蜘蛛在荒原上爬坡上墙：闭式两骨 IK、即兴步态、已落脚支撑面贴合——
+    <b style="color:var(--cyan)">无动画片段、无物理引擎</b>，每帧纯数学。
+    WASD 驱动 · 拖动转视角 · 空格跳跃 · 撞上立柱试试垂直攀爬。
+  </div>
+</div>
+
+<div id="hud" class="glass">
+  <div class="row"><span class="k">FPS</span><span class="v" id="fps">—</span></div>
+  <div class="row"><span class="k">速度</span><span class="v" id="spd">0.0</span></div>
+  <div class="row"><span class="k">坡度</span><span class="v" id="grade">平地</span></div>
+</div>
+
+<div id="panel" class="glass">
+  <div id="panelHead">调参 <span>TUNING</span><span id="panelTog">–</span></div>
+  <div id="panelBody">
+    <div id="sliders"></div>
+    <div id="panelBtns">
+      <button id="reset">重置 R</button>
+      <button id="shot">📷 截图</button>
+    </div>
+  </div>
+</div>
+
+<div id="hint"><b>WASD</b> 移动 · <b>拖动</b> 视角 · <b>滚轮</b> 缩放 · <b>SPACE</b> 跳跃 · <b>SHIFT</b> 疾行 · <b>R</b> 重置 · <b>H</b> 收起面板 · <b>P</b> 暂停</div>
+<div id="joy"><i></i></div>
+<button id="btnJump">跳跃</button>
+<div id="err" class="glass"></div>
+<div id="selftest" class="glass"></div>
+
+<script src="vendor/three.min.js"></script>
+<script src="src/dynamics.js"></script>
+<script src="src/terrain.js"></script>
+<script src="src/collision.js"></script>
+<script src="src/world.js"></script>
+<script src="src/spider.js"></script>
+<script src="src/camera.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
